@@ -1,0 +1,23 @@
+# --- env / secrets ---
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# --- Python (backend) ---
+backend/.venv/
+__pycache__/
+*.pyc
+.ruff_cache/
+.pytest_cache/
+
+# --- Node / Next.js (frontend) ---
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.turbo/
+
+# --- OS / editor ---
+.DS_Store
+.vscode/
+.idea/
