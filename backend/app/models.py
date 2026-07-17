@@ -1,4 +1,5 @@
-from datetime import date, datetime
+from datetime import date as date_type
+from datetime import datetime
 from enum import Enum
 
 from sqlmodel import Field, SQLModel, UniqueConstraint
@@ -35,7 +36,7 @@ class DailyUsage(SQLModel, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="users.id", index=True)
-    date: date = Field(default_factory=date.today)
+    date: date_type = Field(default_factory=date_type.today)
     count: int = Field(default=0)
 
 
