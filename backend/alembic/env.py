@@ -2,13 +2,11 @@ import os
 from logging.config import fileConfig
 
 from dotenv import load_dotenv
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
-from alembic import context
-
 import app.models  # noqa: F401 registers tables on SQLModel.metadata
+from alembic import context
 
 load_dotenv()
 

@@ -1,8 +1,39 @@
-from fastapi import FastAPI, HTTPException
+import logging
+
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
 from app.database import ping_db
+from app.routers import chat, todos, users
+
+logger = logging.getLogger("app")
 
 app = FastAPI(title="Build-in-Public Companion API")
+app.include_router(users.router)
+app.include_router(todos.router)
+app.include_router(chat.router)
+
+
+def _error_response(status_code: int, message: str) -> JSONResponse:
+    return JSONResponse(status_code=status_code, content={"error": {"message": message}})
+
+
+@app.exception_handler(HTTPException)
+async def handle_http_exception(request: Request, exc: HTTPException):
+    return _error_response(exc.status_code, str(exc.detail))
+
+
+@app.exception_handler(RequestValidationError)
+async def handle_validation_error(request: Request, exc: RequestValidationError):
+    return _error_response(422, "invalid request")
+
+
+@app.exception_handler(Exception)
+async def handle_unexpected_error(request: Request, exc: Exception):
+    # never leak raw exception text to the client - full detail goes to the log only
+    logger.exception("unhandled error")
+    return _error_response(500, "internal server error")
 
 
 @app.get("/")

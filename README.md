@@ -20,9 +20,14 @@ cd backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env   # fill in DATABASE_URL etc.
+cp .env.example .env   # fill in DATABASE_URL, CLERK_SECRET_KEY, OPENAI_API_KEY, etc.
+alembic upgrade head    # apply DB migrations
 uvicorn app.main:app --reload
 ```
+
+Run tests: `pytest` (uses an in-memory SQLite DB and mocked OpenAI calls — no live services required).
+
+New migration after changing `app/models.py`: `alembic revision --autogenerate -m "..."`, review the generated file, then `alembic upgrade head`.
 
 ### Frontend
 
@@ -40,4 +45,4 @@ docker compose up -d
 
 ## Status
 
-Phase 1 (repo setup) in progress.
+Phase 1 (repo setup) and Phase 2 backend (API, auth, DB, tests) complete. Frontend implementation paused pending UI/UX design.

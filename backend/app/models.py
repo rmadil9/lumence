@@ -1,5 +1,5 @@
 from datetime import date as date_type
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 from sqlmodel import Field, SQLModel, UniqueConstraint
@@ -10,13 +10,18 @@ class TodoStatus(str, Enum):
     DONE = "done"
 
 
+def _utcnow() -> datetime:
+    # naive UTC, to match the DateTime (no tz) column type in the migration
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
 class User(SQLModel, table=True):
     __tablename__ = "users"
 
     id: int | None = Field(default=None, primary_key=True)
     clerk_user_id: str = Field(unique=True, index=True)
     email: str
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=_utcnow)
 
 
 class Todo(SQLModel, table=True):
@@ -27,7 +32,7 @@ class Todo(SQLModel, table=True):
     title: str
     description: str | None = None
     status: TodoStatus = Field(default=TodoStatus.TODO)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=_utcnow)
 
 
 class DailyUsage(SQLModel, table=True):
