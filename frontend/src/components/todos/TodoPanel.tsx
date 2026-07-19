@@ -1,5 +1,12 @@
-// Phase 1: static shell only. Phase 2 adds AddTodo + TodoList here.
+"use client";
+
+import { useTodos } from "@/hooks/useTodos";
+
+import { AddTodo } from "./AddTodo";
+import { TodoList } from "./TodoList";
+
 export function TodoPanel() {
+  const { todos, isLoading } = useTodos();
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long",
     month: "long",
@@ -7,10 +14,15 @@ export function TodoPanel() {
   });
 
   return (
-    <div className="flex w-full flex-col px-8 py-7">
+    <div className="flex w-full flex-col overflow-y-auto px-8 py-7">
       <h1 className="text-2xl font-medium text-ink">Today</h1>
       <p className="text-meta text-ink-soft">{today}</p>
-      <p className="mt-5 text-task text-ink-muted">No tasks yet</p>
+      <AddTodo autoFocus={!isLoading && todos.length === 0} />
+      {isLoading ? (
+        <p className="text-task text-ink-muted">Loading…</p>
+      ) : (
+        <TodoList todos={todos} />
+      )}
     </div>
   );
 }
