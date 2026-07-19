@@ -1,26 +1,68 @@
 @import "tailwindcss";
 
+/*
+ * Design tokens from Design/lumence-design-handoff.md.
+ * Utility-class names differ from the doc's token names (e.g. `bg` -> `canvas`)
+ * to avoid awkward Tailwind classes like `bg-bg` - the mapping is noted inline.
+ * Dark values are this project's inversion of the light palette; the handoff
+ * only specifies light hex values and says dark is "an inversion, not a
+ * separate design" - revisit in the Phase 5 polish pass if these read wrong.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --canvas: #faf9f6; /* handoff: bg */
+  --surface: #ffffff;
+  --hairline: rgba(0, 0, 0, 0.08); /* handoff: border */
+  --ink: #1a1a18; /* handoff: text-primary */
+  --ink-soft: #6b6a65; /* handoff: text-secondary */
+  --ink-muted: #9c9a93; /* handoff: text-muted */
+  --accent: #b5522f;
+  --warning: #b58a2f;
+  --hover: #f5f4f0; /* handoff: hover-bg */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --canvas: #1c1b18;
+    --surface: #242320;
+    --hairline: rgba(255, 255, 255, 0.08);
+    --ink: #f2f0eb;
+    --ink-soft: #9c9a93;
+    --ink-muted: #726f68;
+    --hover: #2a2925;
+    /* accent/warning stay constant across themes - brand color, not a neutral */
   }
 }
 
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-hairline: var(--hairline);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-muted: var(--ink-muted);
+  --color-accent: var(--accent);
+  --color-warning: var(--warning);
+  --color-hover: var(--hover);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* handoff type scale - weight is applied separately via font-normal/font-medium */
+  --text-scratchpad: 17px;
+  --text-scratchpad--line-height: 1.7;
+  --text-task: 15px;
+  --text-task--line-height: 1.4;
+  --text-label: 13px;
+  --text-label--line-height: 1.4;
+  --text-meta: 12px;
+  --text-meta--line-height: 1.4;
+
+  --radius-control: 6px;
+  --radius-panel: 10px;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-sans);
 }

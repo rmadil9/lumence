@@ -41,7 +41,7 @@ def test_marking_done_stamps_completed_at_and_reverting_clears_it(client):
 
 
 def test_done_todo_completed_before_today_is_cleared_on_list(client, engine):
-    from datetime import datetime, timedelta
+    from datetime import datetime, timedelta, timezone
 
     from sqlmodel import Session
 
@@ -49,7 +49,7 @@ def test_done_todo_completed_before_today_is_cleared_on_list(client, engine):
 
     todo = client.post("/todos", json={"title": "old done task"}).json()
 
-    yesterday = datetime.utcnow() - timedelta(days=1)
+    yesterday = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=1)
     with Session(engine) as session:
         db_todo = session.get(Todo, todo["id"])
         db_todo.status = TodoStatus.DONE

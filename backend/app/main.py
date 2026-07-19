@@ -1,7 +1,9 @@
 import logging
+import os
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.database import ping_db
@@ -10,6 +12,15 @@ from app.routers import chat, publish, todos, users
 logger = logging.getLogger("app")
 
 app = FastAPI(title="Build-in-Public Companion API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=os.environ.get("CORS_ORIGINS", "http://localhost:3000").split(","),
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(users.router)
 app.include_router(todos.router)
 app.include_router(chat.router)
