@@ -1,10 +1,16 @@
 "use client";
 
-import { useNotepad } from "@/hooks/useNotepad";
-
-export function Notepad({ onOpenChat }: { onOpenChat: () => void }) {
-  const { text, setText, isHydrated } = useNotepad();
-
+export function Notepad({
+  text,
+  setText,
+  isHydrated,
+  onOpenChat,
+}: {
+  text: string;
+  setText: (value: string) => void;
+  isHydrated: boolean;
+  onOpenChat: () => void;
+}) {
   return (
     <div className="relative min-h-0 flex-1">
       <textarea
