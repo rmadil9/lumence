@@ -65,7 +65,7 @@ GET    /todos          list my todos
 POST   /todos          {title, description} → new todo
 PATCH  /todos/{id}     {title? description? status?} → updated todo
 DELETE /todos/{id}     remove it
-POST   /chat           {notepad_text, messages[]} → {reply}   # checks + bumps daily cap
+POST   /chat           {messages[]} → {reply}   # context-free, checks + bumps daily cap
 GET    /usage          → {used_today, limit}
 ```
 

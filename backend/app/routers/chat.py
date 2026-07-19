@@ -58,11 +58,10 @@ def chat(
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "system", "content": f"Current draft:\n{payload.notepad_text}"},
         *[{"role": m.role, "content": m.content} for m in payload.messages],
     ]
     try:
-        response = client.chat.completions.create(model="gpt-5.4-mini", messages=messages)
+        response = client.chat.completions.create(model="gpt-4o-mini", messages=messages)
     except Exception as exc:
         raise HTTPException(status_code=502, detail="AI service unavailable") from exc
 

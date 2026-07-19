@@ -68,7 +68,6 @@ class ChatMessage(SQLModel):
 
 
 class ChatRequest(SQLModel):
-    notepad_text: str
     messages: list[ChatMessage]
 
 

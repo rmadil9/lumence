@@ -24,10 +24,7 @@ def fake_openai(monkeypatch):
 
 def test_chat_enforces_daily_cap(client, monkeypatch):
     monkeypatch.setattr(chat_module, "DAILY_CHAT_LIMIT", 2)
-    payload = {
-        "notepad_text": "today I shipped the backend",
-        "messages": [{"role": "user", "content": "polish this"}],
-    }
+    payload = {"messages": [{"role": "user", "content": "polish this"}]}
 
     resp1 = client.post("/chat", json=payload)
     assert resp1.status_code == 200
@@ -51,7 +48,7 @@ def test_failed_openai_call_does_not_count_against_cap(client, monkeypatch):
 
     monkeypatch.setattr(chat_module.client.chat.completions, "create", _boom)
 
-    payload = {"notepad_text": "draft", "messages": [{"role": "user", "content": "hi"}]}
+    payload = {"messages": [{"role": "user", "content": "hi"}]}
     resp = client.post("/chat", json=payload)
     assert resp.status_code == 502
 

@@ -30,7 +30,6 @@ export interface ChatMessage {
 }
 
 export interface ChatRequest {
-  notepad_text: string;
   messages: ChatMessage[];
 }
 
