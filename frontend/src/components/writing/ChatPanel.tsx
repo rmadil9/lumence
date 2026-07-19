@@ -90,7 +90,7 @@ export function ChatPanel({ onClose }: { onClose: () => void }) {
 
       <form onSubmit={handleSubmit} className="shrink-0 border-t border-hairline p-3">
         <div
-          className={`flex items-end gap-2 rounded-control border border-hairline px-3 py-2 ${
+          className={`flex items-end gap-2 rounded-control border border-hairline px-3 py-2 focus-within:border-focus-ring-border focus-within:ring-2 focus-within:ring-focus-ring ${
             isExhausted ? "opacity-60" : ""
           }`}
         >
@@ -107,7 +107,7 @@ export function ChatPanel({ onClose }: { onClose: () => void }) {
             }}
             placeholder={isExhausted ? "Daily limit reached" : "Message…"}
             disabled={isExhausted}
-            className="flex-1 resize-none bg-transparent text-task text-ink outline-none disabled:placeholder:text-ink-muted"
+            className="flex-1 resize-none bg-transparent text-task text-ink outline-none focus-visible:shadow-none disabled:placeholder:text-ink-muted"
           />
           <button
             type="submit"

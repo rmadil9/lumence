@@ -18,6 +18,11 @@
   --accent: #b5522f;
   --warning: #b58a2f;
   --hover: #f5f4f0; /* handoff: hover-bg */
+  /* Handoff prose says focus rings are accent-colored, but every focus state
+     in the actual mockup CSS (.add input.focused, .row-edit input, .box.focused)
+     uses this neutral gray instead - trusting the pixel evidence over the prose. */
+  --focus-ring-border: #8a8a94;
+  --focus-ring: rgba(120, 120, 130, 0.35);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -43,6 +48,8 @@
   --color-accent: var(--accent);
   --color-warning: var(--warning);
   --color-hover: var(--hover);
+  --color-focus-ring: var(--focus-ring);
+  --color-focus-ring-border: var(--focus-ring-border);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -65,4 +72,17 @@ body {
   background: var(--canvas);
   color: var(--ink);
   font-family: var(--font-sans);
+}
+
+/* One shared keyboard-focus style for every interactive element, instead of
+   repeating a ring utility on each component - see --focus-ring above. */
+@layer base {
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  a:focus-visible {
+    outline: none;
+    border-color: var(--focus-ring-border);
+    box-shadow: 0 0 0 2px var(--focus-ring);
+  }
 }

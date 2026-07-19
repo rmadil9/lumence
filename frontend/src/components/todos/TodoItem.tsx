@@ -65,7 +65,7 @@ export function TodoItem({ todo }: { todo: Todo }) {
 
   return (
     <li className="group flex flex-col rounded">
-      <div className="flex items-center gap-2 rounded px-2 py-2 hover:bg-hover">
+      <div className="flex items-center gap-2 rounded px-2 py-2 transition-colors duration-[120ms] hover:bg-hover">
         <button
           type="button"
           onClick={() => setIsExpanded((v) => !v)}
@@ -98,7 +98,7 @@ export function TodoItem({ todo }: { todo: Todo }) {
               if (e.key === "Enter") commitTitle();
               if (e.key === "Escape") revertTitle();
             }}
-            className="min-w-0 flex-1 rounded bg-transparent text-task text-ink outline-none ring-2 ring-accent"
+            className="min-w-0 flex-1 rounded border border-transparent bg-transparent text-task text-ink outline-none"
           />
         ) : (
           <button

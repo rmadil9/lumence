@@ -30,18 +30,20 @@ export function PublishBar({ text }: { text: string }) {
         type="button"
         onClick={() => setXOn((v) => !v)}
         aria-pressed={xOn}
+        aria-label="Toggle X as a publish target"
         className={`rounded-full border px-3.5 py-1.5 text-meta ${
           xOn
             ? "border-ink/80 bg-black/[0.04] text-ink"
             : "border-hairline text-ink-soft"
         }`}
       >
-        𝕏
+        <span aria-hidden>𝕏</span>
       </button>
       <button
         type="button"
         onClick={() => setLinkedinOn((v) => !v)}
         aria-pressed={linkedinOn}
+        aria-label="Toggle LinkedIn as a publish target"
         className={`rounded-full border px-3.5 py-1.5 text-meta ${
           linkedinOn
             ? "border-ink/80 bg-black/[0.04] text-ink"
@@ -69,7 +71,7 @@ export function PublishBar({ text }: { text: string }) {
           onClick={handlePostToX}
           className="flex items-center gap-1.5 rounded-full bg-ink px-4 py-1.5 text-meta text-white"
         >
-          𝕏 Post to X ↗
+          <span aria-hidden>𝕏</span> Post to X ↗
         </button>
       ) : null}
 
@@ -85,7 +87,7 @@ export function PublishBar({ text }: { text: string }) {
 
       {hasPublishedToday ? (
         <span className="flex items-center gap-1.5 px-2 py-1.5 text-meta text-emerald-600">
-          ✓ Published today
+          <span aria-hidden>✓</span> Published today
         </span>
       ) : (
         <button
@@ -94,7 +96,7 @@ export function PublishBar({ text }: { text: string }) {
           disabled={isPublishing}
           className="flex items-center gap-1.5 rounded-full border border-hairline px-4 py-1.5 text-meta text-ink-soft disabled:opacity-50"
         >
-          ✓ Mark as published
+          <span aria-hidden>✓</span> Mark as published
         </button>
       )}
     </div>

@@ -29,7 +29,7 @@ export function AddTodo({ autoFocus = false }: { autoFocus?: boolean }) {
         onChange={(e) => setValue(e.target.value)}
         placeholder="Add a task"
         autoFocus={autoFocus}
-        className="h-10 w-full rounded-control border border-hairline bg-transparent pl-9 pr-3 text-task text-ink outline-none focus:ring-2 focus:ring-accent"
+        className="h-10 w-full rounded-control border border-hairline bg-transparent pl-9 pr-3 text-task text-ink outline-none"
       />
     </form>
   );
