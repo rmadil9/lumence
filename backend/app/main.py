@@ -5,7 +5,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from app.database import ping_db
-from app.routers import chat, todos, users
+from app.routers import chat, publish, todos, users
 
 logger = logging.getLogger("app")
 
@@ -13,6 +13,7 @@ app = FastAPI(title="Build-in-Public Companion API")
 app.include_router(users.router)
 app.include_router(todos.router)
 app.include_router(chat.router)
+app.include_router(publish.router)
 
 
 def _error_response(status_code: int, message: str) -> JSONResponse:

@@ -1,11 +1,31 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
 from app.auth import get_current_user
 from app.database import get_session
-from app.models import Todo, TodoCreate, TodoUpdate, User
+from app.models import Todo, TodoCreate, TodoStatus, TodoUpdate, User
 
 router = APIRouter()
+
+
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
+def _clear_stale_done_todos(user_id: int, session: Session) -> None:
+    """Completed tasks clear at midnight - done todos completed before today are dropped."""
+    today = _utcnow().date()
+    done_todos = session.exec(
+        select(Todo).where(Todo.user_id == user_id, Todo.status == TodoStatus.DONE)
+    ).all()
+    stale = [t for t in done_todos if t.completed_at is not None and t.completed_at.date() < today]
+    if not stale:
+        return
+    for todo in stale:
+        session.delete(todo)
+    session.commit()
 
 
 @router.get("/todos")
@@ -13,6 +33,7 @@ def list_todos(
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ) -> list[Todo]:
+    _clear_stale_done_todos(user.id, session)
     return session.exec(select(Todo).where(Todo.user_id == user.id)).all()
 
 
@@ -45,7 +66,13 @@ def update_todo(
     session: Session = Depends(get_session),
 ) -> Todo:
     todo = _get_owned_todo(todo_id, user, session)
-    for field, value in payload.model_dump(exclude_unset=True).items():
+    updates = payload.model_dump(exclude_unset=True)
+    if "status" in updates:
+        if updates["status"] == TodoStatus.DONE and todo.status != TodoStatus.DONE:
+            todo.completed_at = _utcnow()
+        elif updates["status"] == TodoStatus.TODO:
+            todo.completed_at = None
+    for field, value in updates.items():
         setattr(todo, field, value)
     session.add(todo)
     session.commit()

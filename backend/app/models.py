@@ -22,6 +22,8 @@ class User(SQLModel, table=True):
     clerk_user_id: str = Field(unique=True, index=True)
     email: str
     created_at: datetime = Field(default_factory=_utcnow)
+    streak_count: int = Field(default=0)
+    last_published_date: date_type | None = Field(default=None)
 
 
 class Todo(SQLModel, table=True):
@@ -33,6 +35,7 @@ class Todo(SQLModel, table=True):
     description: str | None = None
     status: TodoStatus = Field(default=TodoStatus.TODO)
     created_at: datetime = Field(default_factory=_utcnow)
+    completed_at: datetime | None = Field(default=None)
 
 
 class DailyUsage(SQLModel, table=True):
@@ -76,3 +79,8 @@ class ChatResponse(SQLModel):
 class UsageResponse(SQLModel):
     used_today: int
     limit: int
+
+
+class StreakResponse(SQLModel):
+    streak: int
+    already_published_today: bool

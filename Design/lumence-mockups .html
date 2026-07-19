@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lumence — Design Mockups</title>
+<style>
+  :root {
+    --paper: #FAF9F6; --ink: #1A1A18; --accent: #B5522F;
+    --bg: #ffffff; --fg: #1a1a18; --muted: #717182; --muted-2: #a1a1ab;
+    --border: rgba(0,0,0,0.10); --border-soft: rgba(0,0,0,0.06);
+    --violet: #7c5cff; --destructive: #d4183d;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #eceae5; color: var(--fg); -webkit-font-smoothing: antialiased; line-height: 1.45; }
+  .page { width: max-content; padding: 48px; display: flex; flex-direction: column; gap: 48px; }
+  .frame-label { font-size: 13px; color: #6b6b66; margin-bottom: 12px; }
+  .frame { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+  .tabular { font-variant-numeric: tabular-nums; } .w500 { font-weight: 500; } a { color: inherit; text-decoration: none; }
+  .landing { width: 1440px; background: var(--paper); color: var(--ink); font-weight: 400; }
+  .landing header { display:flex; align-items:center; justify-content:space-between; padding:0 80px; height:80px; }
+  .landing .wm { font-size:17px; font-weight:500; letter-spacing:-0.01em; } .landing .signin { font-size:15px; }
+  .hero { padding:96px 80px 80px; max-width:860px; }
+  .hero h1 { font-size:52px; line-height:1.1; font-weight:500; letter-spacing:-0.02em; }
+  .hero p { margin-top:24px; font-size:19px; max-width:620px; opacity:.7; }
+  .btn-accent { display:inline-flex; align-items:center; background:var(--accent); color:#fff; font-weight:500; font-size:15px; padding:10px 20px; border-radius:8px; border:none; cursor:pointer; }
+  .hero .cta { margin-top:40px; }
+  .visual { padding:0 80px 112px; }
+  .visual .shot { width:1152px; height:648px; border:1px solid rgba(26,26,24,0.12); border-radius:12px; overflow:hidden; }
+  .visual .scale { width:1440px; height:810px; transform:scale(0.8); transform-origin:top left; }
+  .values { padding:0 80px 112px; }
+  .values .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:64px; max-width:1100px; }
+  .values h3 { font-size:18px; font-weight:500; } .values p { margin-top:8px; font-size:15px; opacity:.7; }
+  .closing { padding:0 80px 112px; max-width:860px; }
+  .closing h2 { font-size:32px; line-height:1.15; font-weight:500; letter-spacing:-0.02em; } .closing .cta { margin-top:32px; }
+  .landing footer { display:flex; align-items:center; justify-content:space-between; padding:0 80px; height:80px; font-size:14px; border-top:1px solid rgba(26,26,24,0.08); }
+  .landing footer .cp { opacity:.55; }
+  .signin-stage { width:1440px; height:720px; background:var(--paper); color:var(--ink); display:flex; align-items:center; justify-content:center; }
+  .card { width:400px; background:#fff; border:1px solid rgba(26,26,24,0.08); border-radius:12px; padding:40px 32px; }
+  .card .wm { text-align:center; font-size:18px; font-weight:500; letter-spacing:-0.01em; }
+  .oauth { margin-top:32px; display:flex; flex-direction:column; gap:12px; }
+  .oauth button { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; border:1px solid rgba(26,26,24,0.14); background:#fff; border-radius:8px; padding:10px; font-size:15px; font-weight:500; cursor:pointer; color:var(--ink); }
+  .oauth button:hover { background:rgba(0,0,0,0.03); } .oauth svg { width:18px; height:18px; }
+  .terms { margin-top:24px; text-align:center; font-size:12px; opacity:.55; }
+  .ws { display:flex; flex-direction:column; width:1440px; height:900px; background:var(--bg); color:var(--fg); }
+  .ws-head { display:flex; align-items:center; justify-content:space-between; padding:0 32px; height:64px; border-bottom:1px solid var(--border); flex-shrink:0; }
+  .ws-head .wm { letter-spacing:-0.01em; } .ws-head .right { display:flex; align-items:center; gap:24px; }
+  .chip { display:flex; align-items:center; gap:6px; color:var(--muted); font-size:14px; }
+  .avatar { width:32px; height:32px; border-radius:50%; background:#eceff3; color:#4b4b57; font-size:12px; display:flex; align-items:center; justify-content:center; }
+  .ws-main { flex:1; display:flex; min-height:0; }
+  .ws-left { width:35%; border-right:1px solid var(--border); } .ws-right { width:65%; }
+  .panel { padding:28px 32px; height:100%; display:flex; flex-direction:column; }
+  .panel h1 { font-size:24px; font-weight:500; } .panel .date { font-size:14px; color:var(--muted); margin-top:2px; }
+  .add { position:relative; margin:20px 0 16px; }
+  .add input { width:100%; height:40px; padding:0 12px 0 36px; border:1px solid rgba(0,0,0,0.12); border-radius:8px; background:transparent; font-size:14px; color:var(--fg); }
+  .add .plus { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted-2); }
+  .tasklist { list-style:none; display:flex; flex-direction:column; gap:2px; }
+  .row { display:flex; align-items:center; gap:8px; padding:8px; border-radius:6px; }
+  .chev { color:var(--muted-2); }
+  .cbox { width:16px; height:16px; border:1px solid rgba(0,0,0,0.25); border-radius:4px; flex-shrink:0; }
+  .row .title { flex:1; font-size:14px; display:flex; align-items:center; gap:6px; }
+  .badge { font-size:12px; color:var(--muted); border:1px solid var(--border); border-radius:9999px; padding:1px 6px; }
+  .note { padding:0 8px 8px 60px; margin-top:-4px; font-size:14px; color:var(--muted); }
+  .done-toggle { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); padding:4px 8px; margin-top:24px; }
+  .scratch { padding:32px 40px; height:100%; display:flex; flex-direction:column; }
+  .scratch .surface { flex:1; font-size:17px; color:rgba(26,26,24,0.9); white-space:pre-line; position:relative; }
+  .chatbtn { position:absolute; bottom:8px; right:8px; display:inline-flex; align-items:center; gap:6px; border:1px solid rgba(0,0,0,0.14); background:rgba(255,255,255,0.8); border-radius:9999px; padding:6px 12px; font-size:14px; color:var(--muted); }
+  .autosave { font-size:12px; color:var(--muted-2); margin-top:12px; }
+  .pubbar { display:flex; align-items:center; gap:16px; padding-top:16px; margin-top:16px; border-top:1px solid var(--border-soft); flex-wrap:wrap; }
+  .toggle { display:flex; align-items:center; gap:8px; border:1px solid; border-radius:9999px; padding:6px 14px; font-size:14px; }
+  .toggle.on { border-color:rgba(26,26,24,0.8); color:var(--ink); background:rgba(0,0,0,0.04); }
+  .toggle.off { border-color:var(--border); color:var(--muted); }
+  .counter { font-size:14px; color:var(--muted); } .spacer { flex:1; }
+  .post { display:flex; align-items:center; gap:8px; background:var(--ink); color:#fff; border-radius:9999px; padding:6px 16px; font-size:14px; border:none; }
+  .markpub { display:flex; align-items:center; gap:8px; border:1px solid var(--border); border-radius:9999px; padding:6px 16px; font-size:14px; color:var(--muted); }
+  .phones { display:flex; gap:40px; flex-wrap:wrap; }
+  .phone { width:390px; height:800px; border:1px solid var(--border); border-radius:32px; overflow:hidden; background:var(--bg); }
+  .m-ws { display:flex; flex-direction:column; height:100%; position:relative; }
+  .m-head { display:flex; align-items:center; justify-content:space-between; padding:0 16px; height:56px; border-bottom:1px solid var(--border); }
+  .m-head .right { display:flex; align-items:center; gap:16px; }
+  .m-tabs { display:flex; border-bottom:1px solid var(--border); }
+  .m-tab { flex:1; min-height:44px; display:flex; align-items:center; justify-content:center; font-size:14px; border-bottom:2px solid transparent; color:var(--muted); }
+  .m-tab.active { border-color:var(--ink); color:var(--ink); }
+  .m-body { flex:1; min-height:0; overflow:hidden; }
+  .m-panel { padding:20px; height:100%; display:flex; flex-direction:column; }
+  .m-row { display:flex; align-items:center; gap:8px; min-height:44px; padding:4px 8px; }
+  .m-trash { color:var(--muted-2); opacity:.4; margin-left:auto; }
+  .m-scratch { padding:20px; height:100%; display:flex; flex-direction:column; }
+  .sheet { position:absolute; inset:0; background:var(--bg); display:flex; flex-direction:column; }
+  .sheet-head { display:flex; align-items:center; justify-content:space-between; padding:0 16px; height:48px; border-bottom:1px solid var(--border-soft); }
+  .sheet-body { flex:1; padding:16px; display:flex; flex-direction:column; gap:16px; overflow:auto; }
+  .msg-user { align-self:flex-end; max-width:85%; background:rgba(124,92,255,0.1); border:1px solid rgba(124,92,255,0.2); border-radius:12px 12px 4px 12px; padding:8px 12px; font-size:14px; }
+  .msg-ai { align-self:flex-start; max-width:85%; background:var(--bg); border:1px solid var(--border); border-radius:12px 12px 12px 4px; padding:8px 12px; font-size:14px; }
+  .copybtn { display:flex; justify-content:flex-end; gap:4px; margin-top:8px; font-size:12px; color:var(--muted); }
+  .composer { border-top:1px solid var(--border-soft); padding:12px; }
+  .composer .box { display:flex; align-items:flex-end; gap:8px; border:1px solid var(--border); border-radius:8px; padding:8px 12px; }
+  .composer input { flex:1; border:none; outline:none; font-size:14px; background:transparent; }
+  .send { width:28px; height:28px; border-radius:50%; background:var(--violet); color:#fff; display:flex; align-items:center; justify-content:center; border:none; }
+  .quota { font-size:12px; color:var(--muted-2); margin-top:8px; padding:0 4px; }
+  /* --- extra states --- */
+  .no-tasks { font-size:14px; color:var(--muted-2); margin-bottom:8px; }
+  .placeholder { color:var(--muted-2); }
+  .add input.focused { border-color:#8a8a94; box-shadow:0 0 0 2px rgba(120,120,130,0.35); }
+  .row.hover { background:rgba(0,0,0,0.03); }
+  .row .trash { color:var(--muted-2); margin-left:8px; }
+  .row .trash.hidden { opacity:0; } .row .trash.faint { opacity:.5; }
+  .row-edit { display:flex; align-items:center; gap:8px; padding:8px; border-radius:6px; }
+  .row-edit input { flex:1; font-size:14px; border:none; outline:none; background:transparent; padding:2px 4px; border-radius:4px; box-shadow:0 0 0 2px #8a8a94; }
+  .confirm { display:flex; align-items:center; justify-content:space-between; padding:8px; border-radius:6px; background:rgba(0,0,0,0.04); }
+  .confirm .actions { display:flex; gap:6px; }
+  .confirm .cancel { font-size:12px; color:var(--muted); padding:4px 8px; border-radius:6px; }
+  .confirm .del { font-size:12px; color:var(--destructive); padding:4px 8px; border-radius:6px; }
+  .counter.over { color:var(--destructive); }
+  .published { display:flex; align-items:center; gap:8px; color:#059669; padding:6px 16px; font-size:14px; }
+  .done-list { list-style:none; margin-top:4px; display:flex; flex-direction:column; gap:2px; }
+  .done-list .title { color:var(--muted); text-decoration:line-through; }
+  .chats-row { display:flex; gap:40px; flex-wrap:wrap; align-items:flex-start; }
+  .chatside { width:340px; height:600px; display:flex; flex-direction:column; border:1px solid var(--border); border-radius:12px; overflow:hidden; background:#f7f6f9; }
+  .chat-head { display:flex; align-items:center; justify-content:space-between; padding:0 16px; height:48px; border-bottom:1px solid var(--border-soft); }
+  .chat-list { flex:1; padding:16px; display:flex; flex-direction:column; gap:16px; overflow:auto; }
+  .box.focused { border-color:#8a8a94; box-shadow:0 0 0 2px rgba(120,120,130,0.35); }
+  .composer.disabled { opacity:.6; }
+  .composer.disabled input::placeholder { color:var(--muted-2); }
+  .send.disabled { opacity:.3; }
+  .explain { font-size:14px; color:var(--muted); line-height:1.5; }
+  .pub-variants { padding:24px; display:flex; flex-direction:column; gap:24px; width:900px; }
+  .pub-variant .vlabel { font-size:12px; color:var(--muted-2); margin-bottom:6px; }
+  .pub-variant .pbwrap { border:1px solid var(--border-soft); border-radius:8px; padding:0 24px 16px; }
+  .rowstates { padding:24px; width:460px; display:flex; flex-direction:column; gap:20px; }
+  .rowstates .rlabel { font-size:12px; color:var(--muted-2); margin-bottom:6px; }
+  .rowstates .rbox { border:1px solid var(--border-soft); border-radius:8px; padding:6px 8px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <section>
+    <div class="frame-label">Landing page &middot; 1440px</div>
+    <div class="frame">
+      <div class="landing">
+        <header><span class="wm">Lumence</span><a class="signin" href="#">Sign in</a></header>
+        <div class="hero">
+          <h1>Build in public without the friction of writing about it.</h1>
+          <p>Track the work, keep a running scratchpad, and turn a day's notes into a post worth shipping &mdash; all in one quiet workspace.</p>
+          <div class="cta"><button class="btn-accent">Start free</button></div>
+        </div>
+        <div class="visual"><div class="shot"><div class="scale">
+          <div class="ws" style="height:810px">
+            <div class="ws-head"><span class="wm">Lumence</span><div class="right"><span class="chip">&#128293; <span class="tabular">9</span></span><span class="chip">&#10022; <span class="tabular">12 / 20</span></span><span class="avatar">MR</span></div></div>
+            <div class="ws-main">
+              <div class="ws-left"><div class="panel">
+                <h1>Today</h1><div class="date">Sunday, July 19</div>
+                <div class="add"><span class="plus">&#65291;</span><input placeholder="Add a task" /></div>
+                <ul class="tasklist">
+                  <li class="row"><span class="chev">&#9656;</span><span class="cbox"></span><span class="title">Review PR #482 &mdash; auth refactor &#9636;</span><span class="badge">5d</span></li>
+                  <li class="row"><span class="chev">&#9656;</span><span class="cbox"></span><span class="title">Reply to Priya about the launch date</span><span class="badge">2d</span></li>
+                  <li class="row"><span class="chev">&#9656;</span><span class="cbox"></span><span class="title">Outline the newsletter intro</span></li>
+                </ul><div class="done-toggle">&#9656; Done <span>2</span></div>
+              </div></div>
+              <div class="ws-right"><div class="scratch">
+                <div class="surface">Shipping isn't the hard part anymore. Deciding what actually deserves to ship is where the week went. I cut three features I'd been quietly proud of. The product is clearer for it, if it didn't feel good in the moment.<button class="chatbtn">&#10022; Chat</button></div>
+                <div class="autosave">Autosaves silently</div>
+                <div class="pubbar"><span class="toggle on">&#120143; X</span><span class="toggle off">in LinkedIn</span><span class="counter">218 / 280</span><span class="spacer"></span><button class="post">&#120143; Post to X &#8599;</button><span class="markpub">&#10003; Mark as published</span></div>
+              </div></div>
+            </div>
+          </div>
+        </div></div></div>
+        <div class="values"><div class="grid">
+          <div><h3>The log writes itself</h3><p>Finished tasks and daily notes become the raw material for your next post.</p></div>
+          <div><h3>One place, no context-switching</h3><p>Plan, write, and publish without bouncing between four different tabs.</p></div>
+          <div><h3>Ship on a streak</h3><p>A gentle counter keeps you posting consistently, not perfectly.</p></div>
+        </div></div>
+        <div class="closing"><h2>Start building in public today.</h2><div class="cta"><button class="btn-accent">Start free</button></div></div>
+        <footer><span class="wm">Lumence</span><a href="#">Privacy</a><span class="cp">&copy; 2026 Lumence</span></footer>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="frame-label">Sign-in card</div>
+    <div class="frame"><div class="signin-stage"><div class="card">
+      <div class="wm">Lumence</div>
+      <div class="oauth">
+        <button><svg viewBox="0 0 24 24"><path fill="#EA4335" d="M12 10.2v3.9h5.5c-.24 1.4-.96 2.6-2.05 3.4l3.3 2.6c1.93-1.8 3.05-4.4 3.05-7.5 0-.7-.06-1.4-.18-2z"/><path fill="#34A853" d="M12 22c2.7 0 4.97-.9 6.63-2.4l-3.3-2.6c-.9.6-2.06.97-3.33.97-2.56 0-4.73-1.73-5.5-4.05l-3.4 2.6C4.5 19.98 8 22 12 22z"/><path fill="#4A90D9" d="M6.5 13.9a6 6 0 0 1 0-3.8L3.1 7.5a10 10 0 0 0 0 9z"/><path fill="#FBBC05" d="M12 6.9c1.47 0 2.79.5 3.83 1.5l2.86-2.86C16.96 3.9 14.7 3 12 3 8 3 4.5 5.02 3.1 8.1l3.4 2.6C7.27 8.4 9.44 6.9 12 6.9z"/></svg>Continue with Google</button>
+        <button><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.66l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117l11.966 15.644Z"/></svg>Continue with X</button>
+        <button><svg viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.5 2h-17A1.5 1.5 0 0 0 2 3.5v17A1.5 1.5 0 0 0 3.5 22h17a1.5 1.5 0 0 0 1.5-1.5v-17A1.5 1.5 0 0 0 20.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 1 1 8.3 6.5a1.78 1.78 0 0 1-1.8 1.75zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.74 1.74 0 0 0 13 14.19a.66.66 0 0 0 0 .14V19h-3v-9h2.9v1.3a3.11 3.11 0 0 1 2.7-1.4c1.55 0 3.36.86 3.36 3.66z"/></svg>Continue with LinkedIn</button>
+      </div>
+      <p class="terms">By continuing you agree to our Terms of Service and Privacy Policy.</p>
+    </div></div></div>
+  </section>
+
+  <section>
+    <div class="frame-label">App &middot; Desktop workspace (1440px)</div>
+    <div class="frame"><div class="ws">
+      <div class="ws-head"><span class="wm">Lumence</span><div class="right"><span class="chip">&#128293; <span class="tabular">9</span></span><span class="chip">&#10022; <span class="tabular">12 / 20</span></span><span class="avatar">MR</span></div></div>
+      <div class="ws-main">
+        <div class="ws-left"><div class="panel">
+          <h1>Today</h1><div class="date">Sunday, July 19</div>
+          <div class="add"><span class="plus">&#65291;</span><input placeholder="Add a task" /></div>
+          <ul class="tasklist">
+            <li><div class="row"><span class="chev">&#9662;</span><span class="cbox"></span><span class="title">Review PR #482 &mdash; auth refactor</span><span class="badge">5d</span></div><div class="note">Check the token-refresh edge case before signing off.</div></li>
+            <li class="row"><span class="chev">&#9656;</span><span class="cbox"></span><span class="title">Reply to Priya about the launch date</span><span class="badge">2d</span></li>
+            <li class="row"><span class="chev">&#9656;</span><span class="cbox"></span><span class="title">Outline the newsletter intro</span></li>
+          </ul><div class="done-toggle">&#9656; Done <span>2</span></div>
+        </div></div>
+        <div class="ws-right"><div class="scratch">
+          <div class="surface">Shipping isn't the hard part anymore. Deciding what actually deserves to ship is where the week went. I cut three features I'd been quietly proud of. The product is clearer for it, if it didn't feel good in the moment.<button class="chatbtn">&#10022; Chat</button></div>
+          <div class="autosave">Autosaves silently</div>
+          <div class="pubbar"><span class="toggle on">&#120143; X</span><span class="toggle off">in LinkedIn</span><span class="counter">218 / 280</span><span class="spacer"></span><button class="post">&#120143; Post to X &#8599;</button><span class="markpub">&#10003; Mark as published</span></div>
+        </div></div>
+      </div>
+    </div></div>
+  </section>
+
+  <section>
+    <div class="frame-label">App &middot; Mobile (390px) &mdash; Tasks, Write, Chat sheet</div>
+    <div class="phones">
+      <div class="phone"><div class="m-ws">
+        <div class="m-head"><span class="wm">Lumence</span><div class="right"><span class="chip">&#128293; <span class="tabular">9</span></span><span class="chip">&#10022; <span class="tabular">12 / 20</span></span><span class="avatar">MR</span></div></div>
+        <div class="m-tabs"><div class="m-tab active">Tasks</div><div class="m-tab">Write</div></div>
+        <div class="m-body"><div class="m-panel">
+          <h1 style="font-size:24px;font-weight:500">Today</h1><div class="date">Sunday, July 19</div>
+          <div class="add"><span class="plus">&#65291;</span><input placeholder="Add a task" /></div>
+          <ul class="tasklist">
+            <li class="m-row"><span class="chev">&#9656;</span><span class="cbox"></span><span class="title">Reply to Priya about the launch date</span><span class="badge">2d</span><span class="m-trash">&#128465;</span></li>
+            <li class="m-row"><span class="chev">&#9656;</span><span class="cbox"></span><span class="title">Review PR #482 &#9636;</span><span class="badge">5d</span><span class="m-trash">&#128465;</span></li>
+            <li class="m-row"><span class="chev">&#9656;</span><span class="cbox"></span><span class="title">Outline the newsletter intro</span><span class="m-trash">&#128465;</span></li>
+            <li class="m-row"><span class="chev">&#9656;</span><span class="cbox"></span><span class="title">Book the dentist appointment</span><span class="badge">2w</span><span class="m-trash">&#128465;</span></li>
+          </ul><div class="done-toggle">&#9656; Done <span>3</span></div>
+        </div></div>
+      </div></div>
+      <div class="phone"><div class="m-ws">
+        <div class="m-head"><span class="wm">Lumence</span><div class="right"><span class="chip">&#128293; <span class="tabular">9</span></span><span class="chip">&#10022; <span class="tabular">12 / 20</span></span><span class="avatar">MR</span></div></div>
+        <div class="m-tabs"><div class="m-tab">Tasks</div><div class="m-tab active">Write</div></div>
+        <div class="m-body"><div class="m-scratch">
+          <div class="surface" style="flex:1;font-size:17px;position:relative">Shipping isn't the hard part anymore. Deciding what actually deserves to ship is where the week went. I cut three features I'd been quietly proud of. The product is clearer for it, if it didn't feel good in the moment.<button class="chatbtn">&#10022; Chat</button></div>
+          <div class="autosave">Autosaves silently</div>
+          <div class="pubbar"><span class="toggle on">&#120143; X</span><span class="toggle off">in LinkedIn</span><span class="counter">218 / 280</span><button class="post" style="margin-top:8px">&#120143; Post to X &#8599;</button></div>
+        </div></div>
+      </div></div>
+      <div class="phone"><div class="m-ws"><div class="sheet">
+        <div class="sheet-head"><span class="chip" style="color:var(--fg)">&#10022; Chat</span><span style="color:var(--muted)">&#10005;</span></div>
+        <div class="sheet-body">
+          <div class="msg-user">Can you tighten the opening line?</div>
+          <div class="msg-ai">Try leading with the tension: "Shipping isn't the hard part anymore." It reads sharper than the original windup.<div class="copybtn">&#9099; Copy</div></div>
+        </div>
+        <div class="composer"><div class="box"><input placeholder="Message&hellip;" /><button class="send">&#8593;</button></div><div class="quota">7 of 10 left today</div></div>
+      </div></div></div>
+    </div>
+  </section>
+  <!-- ============ WORKSPACE STATES ============ -->
+  <section>
+    <div class="frame-label">Workspace &middot; 1. First login</div>
+    <div class="frame"><div class="ws">
+      <div class="ws-head"><span class="wm">Lumence</span><div class="right"><span class="chip">&#128293; <span class="tabular">0</span></span><span class="chip">&#10022; <span class="tabular">12 / 20</span></span><span class="avatar">MR</span></div></div>
+      <div class="ws-main">
+        <div class="ws-left"><div class="panel">
+          <h1>Today</h1><div class="date">Sunday, July 19</div>
+          <div class="no-tasks">No tasks yet</div>
+          <div class="add"><span class="plus">&#65291;</span><input class="focused" placeholder="Add a task" /></div>
+          <ul class="tasklist"></ul>
+        </div></div>
+        <div class="ws-right"><div class="scratch">
+          <div class="surface"><span class="placeholder">Start writing</span><button class="chatbtn">&#10022; Chat</button></div>
+          <div class="autosave">Autosaves silently</div>
+          <div class="pubbar"><span class="toggle off">&#120143; X</span><span class="toggle off">in LinkedIn</span></div>
+        </div></div>
+      </div>
+    </div></div>
+  </section>
+
+  <section>
+    <div class="frame-label">Workspace &middot; 2. Tasks only</div>
+    <div class="frame"><div class="ws">
+      <div class="ws-head"><span class="wm">Lumence</span><div class="right"><span class="chip">&#128293; <span class="tabular">3</span></span><span class="chip">&#10022; <span class="tabular">12 / 20</span></span><span class="avatar">MR</span></div></div>
+      <div class="ws-main">
+        <div class="ws-left"><div class="panel">
+          <h1>Today</h1><div class="date">Sunday, July 19</div>
+          <div class="add"><span class="plus">&#65291;</span><input placeholder="Add a task" /></div>
+          <ul class="tasklist">
+            <li class="row"><span class="chev">&#9656;</span><span class="cbox"></span><span class="title">Draft the Q3 retro notes</span></li>
+            <li class="row"><span class="chev">&#9656;</span><span class="cbox"></span><span class="title">Reply to Priya about the launch date</span></li>
+            <li class="row"><span class="chev">&#9656;</span><span class="cbox"></span><span class="title">Outline the newsletter intro</span></li>
+          </ul>
+        </div></div>
+        <div class="ws-right"><div class="scratch">
+          <div class="surface"><span class="placeholder">Start writing</span><button class="chatbtn">&#10022; Chat</button></div>
+          <div class="autosave">Autosaves silently</div>
+          <div class="pubbar"><span class="toggle on">&#120143; X</span><span class="toggle off">in LinkedIn</span><span class="counter">0 / 280</span><span class="spacer"></span><button class="post">&#120143; Post to X &#8599;</button><span class="markpub">&#10003; Mark as published</span></div>
+        </div></div>
+      </div>
+    </div></div>
+  </section>
+
+  <section>
+    <div class="frame-label">Workspace &middot; 3. Task expanded</div>
+    <div class="frame"><div class="ws">
+      <div class="ws-head"><span class="wm">Lumence</span><div class="right"><span class="chip">&#128293; <span class="tabular">4</span></span><span class="chip">&#10022; <span class="tabular">12 / 20</span></span><span class="avatar">MR</span></div></div>
+      <div class="ws-main">
+        <div class="ws-left"><div class="panel">
+          <h1>Today</h1><div class="date">Sunday, July 19</div>
+          <div class="add"><span class="plus">&#65291;</span><input placeholder="Add a task" /></div>
+          <ul class="tasklist">
+            <li><div class="row"><span class="chev">&#9662;</span><span class="cbox"></span><span class="title">Review PR #482 &mdash; auth refactor</span><span class="badge">5d</span></div><div class="note">Check the token-refresh edge case before signing off.<br/>Leave inline notes for the session-timeout logic.</div></li>
+            <li class="row"><span class="chev">&#9656;</span><span class="cbox"></span><span class="title">Draft the Q3 retro notes &#9636;</span></li>
+          </ul>
+        </div></div>
+        <div class="ws-right"><div class="scratch">
+          <div class="surface"><span class="placeholder">Start writing</span><button class="chatbtn">&#10022; Chat</button></div>
+          <div class="autosave">Autosaves silently</div>
+          <div class="pubbar"><span class="toggle on">&#120143; X</span><span class="toggle off">in LinkedIn</span><span class="counter">0 / 280</span><span class="spacer"></span><button class="post">&#120143; Post to X &#8599;</button><span class="markpub">&#10003; Mark as published</span></div>
+        </div></div>
+      </div>
+    </div></div>
+  </section>
+
+  <section>
+    <div class="frame-label">Workspace &middot; 4. Full day</div>
+    <div class="frame"><div class="ws">
+      <div class="ws-head"><span class="wm">Lumence</span><div class="right"><span class="chip">&#128293; <span class="tabular">9</span></span><span class="chip">&#10022; <span class="tabular">12 / 20</span></span><span class="avatar">MR</span></div></div>
+      <div class="ws-main">
+        <div class="ws-left"><div class="panel">
+          <h1>Today</h1><div class="date">Sunday, July 19</div>
+          <div class="add"><span class="plus">&#65291;</span><input placeholder="Add a task" /></div>
+          <ul class="tasklist">
+            <li class="row"><span class="chev">&#9656;</span><span class="cbox"></span><span class="title">Reply to Priya about the launch date</span><span class="badge">2d</span></li>
+            <li class="row"><span class="chev">&#9656;</span><span class="cbox"></span><span class="title">Review PR #482 &mdash; auth refactor</span><span class="badge">5d</span></li>
+            <li class="row"><span class="chev">&#9656;</span><span class="cbox"></span><span class="title">Book the dentist appointment</span><span class="badge">2w</span></li>
+          </ul>
+          <div class="done-toggle">&#9662; Done <span>3</span></div>
+          <ul class="done-list">
+            <li class="row"><span class="cbox checked" style="margin-left:20px"></span><span class="title">Ship onboarding email copy</span></li>
+            <li class="row"><span class="cbox checked" style="margin-left:20px"></span><span class="title">Cancel unused subscriptions</span></li>
+            <li class="row"><span class="cbox checked" style="margin-left:20px"></span><span class="title">Send invoice to Northwind</span></li>
+          </ul>
+        </div></div>
+        <div class="ws-right"><div class="scratch">
+          <div class="surface">Shipping isn't the hard part anymore. Deciding what actually deserves to ship is where the week went. I cut three features I'd been quietly proud of. The product is clearer for it, if it didn't feel good in the moment.<button class="chatbtn">&#10022; Chat</button></div>
+          <div class="autosave">Autosaves silently</div>
+          <div class="pubbar"><span class="toggle on">&#120143; X</span><span class="toggle off">in LinkedIn</span><span class="counter">218 / 280</span><span class="spacer"></span><button class="post">&#120143; Post to X &#8599;</button><span class="markpub">&#10003; Mark as published</span></div>
+        </div></div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- ============ CHAT STATES ============ -->
+  <section>
+    <div class="frame-label">Chat states &mdash; empty, in use, quota exhausted</div>
+    <div class="chats-row">
+      <div>
+        <div class="frame-label">1. Chat empty</div>
+        <div class="chatside">
+          <div class="chat-head"><span class="chip" style="color:var(--fg)">&#10022; Chat</span><span style="color:var(--muted)">&#10005;</span></div>
+          <div class="chat-list"></div>
+          <div class="composer"><div class="box focused"><input placeholder="Message&hellip;" /><button class="send">&#8593;</button></div><div class="quota">10 of 10 left today</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="frame-label">2. Chat in use</div>
+        <div class="chatside">
+          <div class="chat-head"><span class="chip" style="color:var(--fg)">&#10022; Chat</span><span style="color:var(--muted)">&#10005;</span></div>
+          <div class="chat-list">
+            <div class="msg-user">Can you tighten the opening line?</div>
+            <div class="msg-ai">Try leading with the tension: "Shipping isn't the hard part anymore." It reads sharper than the original windup.<div class="copybtn">&#9099; Copy</div></div>
+            <div class="msg-user">Better. Now make the ending less soft.</div>
+            <div class="msg-ai">Cut the qualifier and let it land: "The discomfort is the signal, not the warning."<div class="copybtn">&#9099; Copy</div></div>
+          </div>
+          <div class="composer"><div class="box"><input placeholder="Message&hellip;" /><button class="send">&#8593;</button></div><div class="quota">7 of 10 left today</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="frame-label">3. Quota exhausted</div>
+        <div class="chatside">
+          <div class="chat-head"><span class="chip" style="color:var(--fg)">&#10022; Chat</span><span style="color:var(--muted)">&#10005;</span></div>
+          <div class="chat-list"><p class="explain">You've used all of today's AI messages &mdash; your limit resets tomorrow.</p></div>
+          <div class="composer disabled"><div class="box"><input placeholder="Daily limit reached" disabled /><button class="send disabled">&#8593;</button></div><div class="quota">0 of 10 left today, resets tomorrow</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PUBLISH BAR VARIANTS ============ -->
+  <section>
+    <div class="frame-label">Publish bar variants</div>
+    <div class="frame"><div class="pub-variants">
+      <div class="pub-variant"><div class="vlabel">a) X only &mdash; within limit</div><div class="pbwrap"><div class="pubbar"><span class="toggle on">&#120143; X</span><span class="toggle off">in LinkedIn</span><span class="counter">218 / 280</span><span class="spacer"></span><button class="post">&#120143; Post to X &#8599;</button><span class="markpub">&#10003; Mark as published</span></div></div></div>
+      <div class="pub-variant"><div class="vlabel">b) X only &mdash; over limit (post still enabled)</div><div class="pbwrap"><div class="pubbar"><span class="toggle on">&#120143; X</span><span class="toggle off">in LinkedIn</span><span class="counter over">314 / 280</span><span class="spacer"></span><button class="post">&#120143; Post to X &#8599;</button><span class="markpub">&#10003; Mark as published</span></div></div></div>
+      <div class="pub-variant"><div class="vlabel">c) X and LinkedIn &mdash; two post buttons</div><div class="pbwrap"><div class="pubbar"><span class="toggle on">&#120143; X</span><span class="toggle on">in LinkedIn</span><span class="counter">218 / 280</span><span class="spacer"></span><button class="post">&#120143; Post to X &#8599;</button><span class="markpub">in Copy for LinkedIn</span><span class="markpub">&#10003; Mark as published</span></div></div></div>
+      <div class="pub-variant"><div class="vlabel">d) After publishing</div><div class="pbwrap"><div class="pubbar"><span class="toggle on">&#120143; X</span><span class="toggle off">in LinkedIn</span><span class="counter">218 / 280</span><span class="spacer"></span><button class="post">&#120143; Post to X &#8599;</button><span class="published">&#10003; Published today</span></div></div></div>
+    </div></div>
+  </section>
+
+  <!-- ============ TASK ROW STATES ============ -->
+  <section>
+    <div class="frame-label">Task row states</div>
+    <div class="frame"><div class="rowstates">
+      <div><div class="rlabel">1. At rest &mdash; delete icon hidden</div><div class="rbox"><div class="row"><span class="chev">&#9656;</span><span class="cbox"></span><span class="title">Review PR #482 &mdash; auth refactor &#9636;</span><span class="badge">5d</span><span class="trash hidden">&#128465;</span></div></div></div>
+      <div><div class="rlabel">2. Hovered &mdash; delete icon visible</div><div class="rbox"><div class="row hover"><span class="chev">&#9656;</span><span class="cbox"></span><span class="title">Review PR #482 &mdash; auth refactor &#9636;</span><span class="badge">5d</span><span class="trash faint">&#128465;</span></div></div></div>
+      <div><div class="rlabel">3. Title in edit mode &mdash; focus ring active</div><div class="rbox"><div class="row-edit"><span class="chev">&#9656;</span><span class="cbox"></span><input value="Review PR #482 &mdash; auth refactor" /><span class="badge">5d</span></div></div></div>
+      <div><div class="rlabel">4. Inline delete confirmation</div><div class="rbox"><div class="confirm"><span style="font-size:14px">Delete this task?</span><div class="actions"><span class="cancel">Cancel</span><span class="del">Delete</span></div></div></div></div>
+    </div></div>
+  </section>
+
+</div>
+</body>
+</html>
