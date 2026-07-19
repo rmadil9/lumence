@@ -11,7 +11,7 @@ afterEach(() => {
 
 describe("createApiClient", () => {
   it("attaches the Clerk token as a bearer header", async () => {
-    const fetchMock = vi.fn(
+    const fetchMock = vi.fn<typeof fetch>(
       async () => new Response(JSON.stringify([]), { status: 200 }),
     );
     vi.stubGlobal("fetch", fetchMock);
