@@ -1,12 +1,11 @@
 @import "tailwindcss";
 
 /*
- * Design tokens from Design/lumence-design-handoff.md.
+ * Design tokens from Design/lumence-design-handoff.md, matched exactly
+ * against Design/lumence-mockups .html's actual <style> block (light-only -
+ * that file has no dark-mode CSS at all, so neither does this).
  * Utility-class names differ from the doc's token names (e.g. `bg` -> `canvas`)
  * to avoid awkward Tailwind classes like `bg-bg` - the mapping is noted inline.
- * Dark values are this project's inversion of the light palette; the handoff
- * only specifies light hex values and says dark is "an inversion, not a
- * separate design" - revisit in the Phase 5 polish pass if these read wrong.
  */
 :root {
   --canvas: #faf9f6; /* handoff: bg */
@@ -23,19 +22,6 @@
      uses this neutral gray instead - trusting the pixel evidence over the prose. */
   --focus-ring-border: #8a8a94;
   --focus-ring: rgba(120, 120, 130, 0.35);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --canvas: #1c1b18;
-    --surface: #242320;
-    --hairline: rgba(255, 255, 255, 0.08);
-    --ink: #f2f0eb;
-    --ink-soft: #9c9a93;
-    --ink-muted: #726f68;
-    --hover: #2a2925;
-    /* accent/warning stay constant across themes - brand color, not a neutral */
-  }
 }
 
 @theme inline {
