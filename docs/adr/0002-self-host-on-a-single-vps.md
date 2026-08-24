@@ -6,8 +6,8 @@
 
 ## Context
 Deploy target is a VPS with 16 GB RAM and 100 GB SSD. The original stated budget was
-$0/month. v1 had chosen rented PaaS (Vercel + Railway + Neon + Clerk), which contradicts
-both the deploy target and the budget.
+$0/month. The archived prior project had chosen rented PaaS, which contradicts both
+the deploy target and the budget.
 
 ## Options considered
 1. **Rented PaaS** — fastest to a URL, least operational surface. Rejected: Vercel's free
@@ -17,14 +17,15 @@ both the deploy target and the budget.
 3. **Self-host everything** — chosen.
 
 ## Decision
-All components run on the single VPS under Docker Compose: Postgres, the API, the web app,
-and a reverse proxy terminating TLS. Authentication is self-hosted (ADR pending). The one
-external paid dependency is the OpenAI API.
+All application components run on the single VPS behind a reverse proxy terminating TLS.
+Authentication is self-hosted. The concrete stack — runtime, framework, database,
+containerisation — is **not decided here**; it belongs to the stack ADR.
 
 ## Consequences
-- **The budget line changes from $0/month to VPS + OpenAI usage.** Metered LLM cost is why
-  per-plan token quotas are in v1 scope rather than deferred.
-- We own, and must therefore build and document: TLS issuance and renewal, Postgres backups
+- **The budget line changes from $0/month to VPS + metered LLM usage.** Cost control for
+  the LLM is an open question in `01-problem.md`; subscription tiers are not the answer,
+  since those are deferred to v2.
+- We own, and must therefore build and document: TLS issuance and renewal, database backups
   **with a tested restore**, process supervision and restart-on-reboot, OS patching, and —
   because signup requires email verification — transactional email deliverability. A fresh
   VPS IP has no sending reputation, so a third-party SMTP relay is the likely outcome

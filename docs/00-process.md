@@ -3,82 +3,98 @@
 ## Dominant risk and chosen model
 
 Lumence's dominant risk is **scope against a fixed deadline, with one unresolved
-technology question embedded inside it.** It is *not* value uncertainty: Adil is the
-primary user, faces the pain himself, and has explicitly stated he does not care about
-revenue or third-party adoption for v1 — so there is no "will anyone want this" question
-left to retire. It is *not* requirement uncertainty either: the behaviours are known and
-enumerable (see `02-spec.md`). What remains is that the chosen v1 surface — six product
-areas, self-hosted auth with open signup, and whole-day activity tracking across both
-desktop applications and browser tabs — estimates at roughly **18–19 working days against
-a hard 15-day deadline**, and one line item in that estimate (desktop activity tracking
-on Ubuntu GNOME/Wayland) rests on an API neither of us has used.
+technology question sitting inside the scope.**
 
-The chosen model is therefore **spike-gated linear**. Linear is legitimate here because
-requirements and value are both settled — but a pure linear pass would design around an
-assumption (that the focused window is observable) which, if false, invalidates the
-tracker, the analytics dashboard, and half the reason the product exists. So one
-time-boxed spike runs *before* design, answers that single question, and is thrown away.
-Everything after it is a single understanding pass followed by risk-ordered vertical
-slices.
+- It is **not value uncertainty.** Adil is the user, has the pain, and has said he does not
+  care about revenue or outside adoption for v1. There is no "will anyone want this" left
+  to answer.
+- It is **not requirement uncertainty.** The behaviours are known and listable (`02-spec.md`).
+- What remains: six product surfaces plus self-hosted signup plus whole-day activity
+  tracking, against a hard **20-day** deadline at 10 h/day — and one of those items depends
+  on capability we have not yet proven exists on the target platform.
 
-**Iterations expected:** one pass through spine steps 1–6 (understanding), time-boxed to
-**2 days**; then approximately 10 delivery slices. No second understanding pass is planned
-before day 15.
+**The unproven capability:** capturing which desktop application and which browser tab had
+the user's attention, all day, and getting that data to the server. Nothing about *how* is
+decided here — mechanism belongs to the architecture phase. What belongs here is the
+honest statement that we do not yet know the cost, and everything downstream assumes an
+answer.
 
-**Evidence that would make us switch models:** if spike S1 fails, or if the tracker slice
-overruns its box by more than 50%, we do not extend the deadline and we do not switch to a
-looser model — we descend the descope ladder below. If, contrary to the stated goal, Adil
-starts optimising for other users' adoption, the dominant risk becomes value uncertainty
-and the model should switch to Lean MVP.
+## What "spike-gated linear" means
+
+Two words, two ideas:
+
+- **Linear** — we do the understanding pass once (problem → spec → domain → contracts →
+  architecture), then build slices in order. No repeated re-specification. This is
+  legitimate *because* requirements and value are already settled.
+- **Spike-gated** — a **spike** is a short, time-boxed experiment whose only output is an
+  answer to one question. The code is thrown away on purpose. It is "gated" because the
+  linear pass does not start until the spike has answered.
+
+Why not pure linear: a linear plan would design the tracker around an assumption. If that
+assumption is wrong, the tracker, the analytics view, and the reason the product exists all
+collapse — on day 12, not day 1. One day spent proving it up front is cheap insurance.
+
+Why not iterative or Lean MVP: both exist to discover *what to build* or *whether anyone
+wants it*. Neither is in doubt here, so both would just add ceremony.
 
 ## The rule for the whole project
 
-**Work is always ordered by descending risk, not by convenience and not by layer.**
-The scariest unknown goes first, every time, even when a lower-risk task would feel more
+**Work is ordered by descending risk — never by convenience, never by layer.**
+The scariest unknown goes first, every time, even when something easier would feel more
 productive.
 
-## The descope ladder
+## Iterations expected
 
-The deadline is the fixed constraint; scope is the variable. These cuts are agreed **now**,
-while calm, and taken in this order at the checkpoints below. Taking rungs 1 and 2 brings
-the estimate to roughly 15 days with slack.
+- One understanding pass (spine steps 1–6), time-boxed to **2 days**
+- Then roughly 10 delivery slices
+- No second understanding pass planned inside the 20 days
 
-1. **Browser tabs → desktop apps only** (~1.5 days saved). Per-application time survives;
-   per-domain breakdown is lost. Tab tracking becomes a v2 client against the same
-   unchanged ingest contract.
-2. **Open signup → multi-user schema with a single account** (~2 days saved). Identical
-   tables and identical per-user query filtering; no signup flow, no email verification,
-   no password reset, no transactional email to own. Upgrades to open signup later with
-   zero data migration.
-3. **Lock-in session review UI → raw day view only** (~0.5 days saved).
-4. **X manual-assist publishing → cut** (~0.5 days saved). Notepad drafts get copied out
-   by hand.
+## Evidence that would make us switch models
 
-**Checkpoints:** end of day 3, end of day 7, end of day 11. At each, compare slices
-completed against slices remaining. If remaining work exceeds remaining days, descend one
-rung. Do not wait for the next checkpoint to hope.
+- If the spike fails, or the tracker work overruns its estimate by more than 50% → we do
+  not extend the deadline and do not loosen the model. We use the contingency ladder below.
+- If Adil starts optimising for other people's adoption → dominant risk becomes value
+  uncertainty, and the model should switch to Lean MVP.
+
+## Contingency ladder
+
+The deadline is fixed; scope is the variable. At 20 days the current scope roughly fits, so
+these are **contingency, not plan** — agreed now, while calm, so the choice is never made
+in a panic. Taken in this order:
+
+1. **Browser tabs → desktop applications only.** Per-application time survives; per-domain
+   breakdown is lost. Tab capture becomes a later client against an unchanged ingest
+   contract.
+2. **Open signup → multi-user schema with a single account.** Same tables, same per-user
+   filtering; no signup flow, no email verification, no password reset. Upgrades later with
+   no data migration.
+3. **Lock-in session review UI → raw day view only.**
+4. **X manual-assist publishing → cut.** Drafts get copied out by hand.
+
+**Checkpoints:** end of day 4, day 9, day 14. At each, compare slices done against slices
+left. If work left exceeds days left, descend one rung immediately — do not wait for the
+next checkpoint and hope.
 
 ## Exit criteria for the understanding phase
 
-- `00-process.md` through `05-architecture.md` drafted and signed off by Adil
-- Every irreversible decision has an ADR: self-hosting vs PaaS, self-hosted auth,
-  tracker architecture, LLM provider adapter, and the discard of the v1 codebase
+- `00-process.md` through `05-architecture.md` drafted and signed off
+- An ADR for every irreversible decision: stack, self-hosted auth, activity-capture
+  architecture, LLM provider
 - `slices.md` populated and risk-ordered
-- Time-boxed to 2 days. Unresolved ambiguity becomes an open question in `slices.md`,
-  never a blocker.
+- Time-boxed to 2 days. Unresolved ambiguity becomes an open question in `slices.md`, never
+  a blocker
 
 ## Hats
 
-Per blueprint §5, one hat at a time, declared at the start of each session. The
-architect's decisions are logged as ADRs; the coder does not renegotiate scope mid-slice;
-QA runs in a fresh session with no build context. The growth-manager hat is **unused in
-v1** — there is no acquisition goal.
+One hat per session, declared at the start. The architect's decisions become ADRs; the
+coder does not renegotiate scope mid-slice; QA runs in a fresh session with no build
+context. The growth-manager hat is **unused** — there is no acquisition goal.
 
 ## Known process risks
 
-- **Adil is both the only user and the only builder.** There is no external party who will
-  notice a wrong assumption. QA must therefore run in genuinely fresh sessions, and the
-  comprehension question at the end of each slice is not optional.
-- **Self-hosting plus self-hosted auth means owning credential security, TLS renewal,
-  Postgres backups, and transactional email deliverability** — four operational surfaces,
-  none of which appear in a feature list, all of which can consume a day.
+- **Adil is both the only user and the only builder.** Nobody else will notice a wrong
+  assumption. So QA must genuinely run in fresh sessions, and the end-of-slice
+  comprehension question is not optional.
+- **Self-hosting plus self-hosted signup means owning operations** — TLS renewal, backups
+  with a tested restore, restart-on-reboot, OS patching, and email deliverability. None of
+  these appear on a feature list. Each can eat a day.

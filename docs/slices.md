@@ -5,13 +5,14 @@
 > Status: **skeleton.** Populated after 05-architecture.md sign-off.
 
 ## Slice 0 — walking skeleton (always first)
-Request → logic → Postgres → response → UI → deployed HTTPS URL → CI green. Nothing else.
+Request → logic → database → response → UI → deployed HTTPS URL → CI green. Nothing else.
 
-## Spike S1 — tracker feasibility (runs BEFORE design, time-boxed to 1 day)
-Question to answer: can a GNOME Shell extension on Ubuntu/Wayland report the focused
-window over D-Bus to a local process, reliably, without breaking on shell restart?
-Deliverable: a yes/no answer and a thrown-away prototype. Not production code.
-Gate: a NO here descends the descope ladder immediately.
+## Spike S1 — activity-capture feasibility (runs BEFORE design, time-boxed to 1 day)
+Question to answer: on Adil's actual machine, can something reliably observe which desktop
+application and which browser tab has attention, and hand that off to another process?
+Mechanism is deliberately unspecified — finding it is the spike.
+Deliverable: a yes/no answer, a cost estimate, and a thrown-away prototype. Not production
+code. Gate: a NO here descends the contingency ladder immediately.
 
 ## Backlog
 TODO(adil)

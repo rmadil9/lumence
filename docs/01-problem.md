@@ -26,10 +26,10 @@ is bad; it is **fragmentation**:
 
 The specific insight worth naming, because it is the only genuinely non-obvious thing in
 the product: **whole-day activity tracking is what gives the lock-in timer meaning.** A
-focus timer alone is a stopwatch plus an honour system, and a dozen apps ship one. A focus
-timer whose claim can be checked against what actually had focus for those three hours is a
+focus timer on its own is a stopwatch plus an honour system, and a dozen apps ship one. A
+focus timer whose claim can be checked against where the attention actually went is a
 different product. The tracker is the spine of the idea, not an accessory to it — which is
-why its feasibility is spiked before anything is designed (`00-process.md`).
+why its feasibility is proven before anything is designed (`00-process.md`).
 
 ## What Adil does today instead
 
@@ -44,7 +44,7 @@ current tool would make you quietly stop using Lumence.
 Stated goal, in Adil's words: *"build a SaaS product end to end, deployable, fully
 functional."* Money and third-party adoption are explicitly not success criteria.
 
-Made measurable — v1 succeeds if, by day 15:
+Made measurable — v1 succeeds if, by day 20:
 
 1. The app is reachable at a public HTTPS URL, self-hosted on the VPS, and survives a
    reboot without manual intervention.
@@ -59,14 +59,14 @@ Made measurable — v1 succeeds if, by day 15:
    the tool it replaced. This is the only criterion that measures whether the product
    works rather than whether it was built.
 
-TODO(adil): criterion 7 sits past day 15. Accept it as a post-launch gate, or replace it?
+TODO(adil): criterion 7 sits past day 20. Accept it as a post-launch gate, or replace it?
 
 ## Non-goals for v1
 
 Explicitly out, and not to be reopened mid-slice:
 
-- **Revenue.** No billing, no payment processing, no pricing page. Plans exist solely as
-  LLM token-quota enforcement.
+- **Revenue and subscription plans.** No billing, no payment processing, no pricing page,
+  no plan tiers. Subscriptions are a v2 concern and will use **Paddle** when they arrive.
 - **User acquisition.** No marketing site, no onboarding funnel, no analytics on visitors.
 - **Hard enforcement.** The lock-in timer measures; it does not block or kill applications.
   Blocking is privileged system software and is out of scope.
@@ -78,4 +78,5 @@ Explicitly out, and not to be reopened mid-slice:
 
 - Whether "one timer running at a time" is a true invariant for how Adil actually works.
 - Whether the browser-tab dimension survives the descope ladder.
-- What plan tiers exist, and what token quota each carries.
+- Whether v1 needs any LLM usage cap at all for cost control, given that plan tiers are
+  deferred. A single global cap is not the same thing as a subscription tier.
