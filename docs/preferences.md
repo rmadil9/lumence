@@ -14,7 +14,9 @@ default, this file wins.
 
 ## How you work
 
-- **Commit on your own.** Do not ask permission to commit. Write a clear message and do it.
+- **I run all git commands and CLI commands, not you.** Never commit, push, branch, or run
+  shell commands on my behalf. Write the files, then *tell me the exact command to run* and
+  I will run it. This is how I stay in control of my own repo and keep learning the tooling.
 - Stay inside the current phase. Do not decide things that belong to a later phase — flag
   them as open and move on.
 - Tell me when I am wrong, once, clearly. Then follow my decision and log it as an ADR.
