@@ -10,6 +10,11 @@ default, this file wins.
   right word, use it and define it in one line the first time.
 - **Keep it short.** Say the thing, stop. No preamble, no recap of what I just said, no
   summary at the end of every message.
+- **Keep it simple to understand.** Explain it so I get it on the first read, without
+  going back to another document to decode a word. If you use a term from one of our own
+  docs — or any term at all — restate what it means in the same breath, every time, not
+  just the first time you ever used it. Assume I have not memorised our docs. If I have to
+  ask "what does that mean", you wrote it wrong.
 - Long output is allowed only when I ask for a document, a doc draft, or a full review.
 
 ## How you work
