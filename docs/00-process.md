@@ -57,7 +57,9 @@ a panic. Taken in this order:
    filtering; no signup flow, no email verification, no password reset. Upgrades later with
    no data migration.
 3. **Lock-in session review UI → raw day view only.**
-4. **X manual-assist publishing → cut.** Drafts get copied out by hand.
+4. ~~**X manual-assist publishing → cut.**~~ **Already spent.** X publishing was reduced to
+   a plain link during the spec session ([ADR 0007](adr/0007-x-publishing-reduced-to-a-link.md)),
+   so there is nothing left here to cut. Rungs 1–3 are the whole ladder now.
 
 **Checkpoints:** end of day 4, day 9, day 14. At each, compare slices done against slices
 left. If work left exceeds days left, descend one rung immediately — do not wait for the

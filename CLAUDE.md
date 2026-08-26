@@ -1,9 +1,9 @@
 # Lumence — agent context
 
-A single-platform personal work hub for one solo developer: todos with per-todo time
-tracking, a lock-in (deep-work) timer, a notepad, LLM-assisted writing, manual-assist
-publishing to X, and whole-day analytics of time spent per application and browser tab.
-Self-hosted on one VPS. Built to production standards. Monetisation is out of scope for
+A single-platform personal work hub for solo developers: todos, a lock-in (deep-work)
+countdown timer, a notepad, an LLM chat for refining writing, a link out to X, and
+whole-day analytics of time spent per application and browser domain. Self-hosted on one
+VPS, with open signup for real users. Built to production standards. Monetisation is out of scope for
 v1; subscription plans are a v2 concern and will use Paddle.
 
 The spine of the product is the activity tracker — it is what makes the lock-in timer
@@ -11,6 +11,9 @@ verifiable rather than an honour system. Treat it as core, not as an accessory.
 
 ## Status
 Understanding phase. **No product code yet.** Stack is not chosen; see the TODOs below.
+`02-spec.md` is drafted and awaiting sign-off — v1 has **five surfaces**: auth, todos,
+lock-in timer, notepad (with LLM chat and an X link), and day analytics. Per-todo time
+tracking is cut ([ADR 0004](docs/adr/0004-drop-per-todo-time-tracking.md)).
 
 ## Tech stack and why
 **Not decided.** The stack belongs to the architecture phase and gets its own ADR. Do not
@@ -22,6 +25,12 @@ Settled so far, and only this:
 - **Auth model:** self-hosted, multi-user with open signup — mechanism TBD, ADR pending
 - **LLM:** a paid API behind a provider-agnostic adapter — provider pending the stack ADR
 - **Archived prior project discarded, not extended** — [ADR 0001](docs/adr/0001-discard-archived-codebase.md)
+
+Scope decisions from the spec session (2026-08-26): [ADR 0004](docs/adr/0004-drop-per-todo-time-tracking.md)
+per-todo timers cut · [ADR 0005](docs/adr/0005-full-email-auth-plus-google-oauth.md) full
+email auth + Google OAuth · [ADR 0006](docs/adr/0006-lock-in-is-a-plain-countdown.md)
+lock-in is a plain countdown · [ADR 0007](docs/adr/0007-x-publishing-reduced-to-a-link.md)
+X publishing is a link.
 
 ## Commands
 TODO(adil): install / dev / test / lint / typecheck / migrate / deploy — fill in at slice 0.
