@@ -1,6 +1,6 @@
 # Lumence — Decision Log
 
-**Owner:** Adil · **Last updated:** 2026-08-26 · **Phase:** understanding (no product code yet)
+**Owner:** Adil · **Last updated:** 2026-08-27 · **Phase:** understanding (no product code yet)
 
 This is the one-page record of every judgement made on this project so far, who made it,
 what was rejected, and what it costs to undo. It exists so the reasoning survives the
@@ -135,6 +135,37 @@ point of this document.
 
 ---
 
+### ADR 0008 — The stack
+- **Decided by:** Adil · 2026-08-27 · **AI advised differently on two items and was overruled.**
+- **Choice:** one Next.js app (user interface and server code in a single TypeScript
+  project, one deploy) · PostgreSQL · Prisma · Better Auth · Docker Compose · nginx with
+  Certbot for HTTPS · Python for the laptop capture client.
+- **Rejected:** a separate Python API alongside the Next.js UI — it would use both languages
+  Adil knows, but means two codebases, two deploys, and every API shape written twice where
+  they drift silently. Costed at 1.5–2 days taken straight out of activity capture.
+- **Why one app:** on a fixed 20-day budget with the ops burden already owned (ADR 0002),
+  one language and one deploy unit is the largest schedule saving available.
+- **Overrule 1 — Prisma over Drizzle.** The AI recommended Drizzle because it keeps the SQL
+  visible, and learning is a stated goal. Adil chose Prisma for the better documentation and
+  gentler landing. Cost accepted: less SQL written by hand, and less SQL learned.
+- **Overrule 2 — nginx over Caddy.** Caddy issues and renews HTTPS certificates by itself,
+  which would have deleted one of the ops chores ADR 0002 flagged. Adil chose nginx because
+  it is the industry default and the configuration is a transferable skill. **Cost accepted:
+  Certbot is now our job — installed, wired in, and its renewal actually tested. ~half a day,
+  and it belongs in the runbook.**
+- **Third-party dependency approved:** Better Auth. It is on the human veto list and Adil
+  approved it explicitly. It gives spec A1–A7 — email and password, verification links,
+  password reset, Google sign-in, one account per person — without hand-writing the parts
+  where security bugs ship.
+- **Still open:** the email relay that sends verification and reset links, and where the
+  midnight `delayed`-flip job lives (scheduled TypeScript in the same codebase, which the AI
+  recommends, versus a separate Python process, which would put the schema in two places).
+- **Reversibility:** mixed. Reverse proxy and email relay are cheap to swap. Prisma and
+  Better Auth are moderate — both own database tables. Splitting one app into two services
+  later is real work but not a rewrite.
+
+---
+
 ## 3. Decisions made without a separate ADR
 
 | Decision | Made by | Reasoning |
@@ -160,12 +191,11 @@ point of this document.
 
 Kept open on purpose, so they are decided with full information rather than early and badly:
 
-- **The technology stack** — language, framework, database. Adil knows Next.js and Python.
-  Nothing has been assumed anywhere in the docs or the code.
+- ~~**The technology stack**~~ — **decided 2026-08-27, ADR 0008.**
 - **How activity tracking actually works** — how the app in front of you and the website in
   front of you get observed, and how that reaches the server. The riskiest unknown in the
   project.
-- **How authentication is built** — the requirement is decided (ADR 0005), the mechanism is not.
+- ~~**How authentication is built**~~ — **decided 2026-08-27, ADR 0008: Better Auth.**
 - **Which LLM provider** — the requirement is decided, the vendor is not.
 - **The data shape and API surface** — the hardest thing to change after the fact, so it is
   deliberately last.

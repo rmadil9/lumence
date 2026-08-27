@@ -10,20 +10,31 @@ The spine of the product is the activity tracker — it is what makes the lock-i
 verifiable rather than an honour system. Treat it as core, not as an accessory.
 
 ## Status
-Understanding phase. **No product code yet.** Stack is not chosen; see the TODOs below.
+Understanding phase. **No product code yet.** Stack is chosen ([ADR 0008](docs/adr/0008-stack-single-nextjs-app-on-docker.md)).
 `02-spec.md` is drafted and awaiting sign-off — v1 has **five surfaces**: auth, todos,
 lock-in timer, notepad (with LLM chat and an X link), and day analytics. Per-todo time
 tracking is cut ([ADR 0004](docs/adr/0004-drop-per-todo-time-tracking.md)).
 
 ## Tech stack and why
-**Not decided.** The stack belongs to the architecture phase and gets its own ADR. Do not
-assume a runtime, framework, database, or container setup anywhere in the docs or the code
-until that ADR exists.
+**Decided — [ADR 0008](docs/adr/0008-stack-single-nextjs-app-on-docker.md).**
 
-Settled so far, and only this:
+| Layer | Choice |
+|---|---|
+| Web app | One Next.js app — UI and server code in one TypeScript project, one deploy |
+| Database | PostgreSQL |
+| ORM + migrations | Prisma |
+| Auth | Better Auth, self-hosted, tables in our own Postgres |
+| Deployment | Docker Compose |
+| Reverse proxy + TLS | nginx + Certbot |
+| Laptop capture client | Python |
+| Browser tab capture | Browser extension (JavaScript) |
+| Email relay | TODO(adil): Resend / Postmark / SES — deferred, needs domain setup |
+| Background job home (spec T4) | TODO(adil): scheduled TypeScript in-repo (recommended) vs separate Python process |
+
+Deployment and auth model settled earlier:
 - **Deployment model:** everything self-hosted on one VPS — [ADR 0002](docs/adr/0002-self-host-on-a-single-vps.md)
-- **Auth model:** self-hosted, multi-user with open signup — mechanism TBD, ADR pending
-- **LLM:** a paid API behind a provider-agnostic adapter — provider pending the stack ADR
+- **Auth model:** self-hosted, multi-user with open signup — [ADR 0005](docs/adr/0005-full-email-auth-plus-google-oauth.md)
+- **LLM:** a paid API behind a provider-agnostic adapter — provider pending, ADR pending
 - **Archived prior project discarded, not extended** — [ADR 0001](docs/adr/0001-discard-archived-codebase.md)
 
 Scope decisions from the spec session (2026-08-26): [ADR 0004](docs/adr/0004-drop-per-todo-time-tracking.md)

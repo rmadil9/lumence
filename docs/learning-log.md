@@ -12,3 +12,8 @@ One line per concept I met and what it means. My proof I am not vibe coding.
 | Idle threshold | Spec session: deciding what counts as time at the machine | A period of no input after which time stops being attributed to the foreground application — subtraction, so the day's numbers are not inflated. |
 | Account linking | Spec session: adding Google OAuth alongside email signup | Resolving the same person arriving by two sign-in routes to one account rather than two, usually keyed on a verified email address. |
 | Idempotency | Spec session: the duplicate-submit and offline-backlog edge cases | The property that doing the same operation twice leaves the same result as doing it once — what stops a double-click or a replayed backlog from double-counting. |
+| ORM | Stack session: choosing Prisma | A library that lets you read and write database rows as objects in your code, instead of writing SQL by hand. |
+| Migration | Stack session: how the database changes shape over time | A versioned script that alters the database's structure, so the schema and the code stay in step across every machine. |
+| Container | Stack session: choosing Docker Compose | An app packaged together with its dependencies so it runs identically on any machine. |
+| Reverse proxy | Stack session: choosing nginx | The program in front of your app that accepts requests from the internet, handles HTTPS, and passes them through. |
+| TLS certificate renewal | Stack session: nginx has no automatic renewal, so Certbot is now our job | HTTPS certificates expire every ~90 days; something must renew them automatically, and the renewal must be tested, not assumed. |
