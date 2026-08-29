@@ -10,7 +10,8 @@ The spine of the product is the activity tracker — it is what makes the lock-i
 verifiable rather than an honour system. Treat it as core, not as an accessory.
 
 ## Status
-Understanding phase. **No product code yet.** Stack is chosen ([ADR 0008](docs/adr/0008-stack-single-nextjs-app-on-docker.md)).
+Understanding phase. **No product code yet.** Stack is chosen ([ADR 0008](docs/adr/0008-stack-single-nextjs-app-on-docker.md))
+and activity capture is designed ([ADR 0009](docs/adr/0009-activity-capture-fixed-window-samples.md)).
 `02-spec.md` is drafted and awaiting sign-off — v1 has **five surfaces**: auth, todos,
 lock-in timer, notepad (with LLM chat and an X link), and day analytics. Per-todo time
 tracking is cut ([ADR 0004](docs/adr/0004-drop-per-todo-time-tracking.md)).
@@ -26,8 +27,9 @@ tracking is cut ([ADR 0004](docs/adr/0004-drop-per-todo-time-tracking.md)).
 | Auth | Better Auth, self-hosted, tables in our own Postgres |
 | Deployment | Docker Compose |
 | Reverse proxy + TLS | nginx + Certbot |
-| Laptop capture client | Python |
-| Browser tab capture | Browser extension (JavaScript) |
+| Laptop capture client | Python daemon — 15-second samples, local SQLite buffer ([ADR 0009](docs/adr/0009-activity-capture-fixed-window-samples.md)) |
+| Focused-app source | GNOME Shell extension — laptop is Wayland, D-Bus introspection restricted |
+| Browser tab capture | Browser extension (JavaScript) → reports to the local daemon, not the VPS |
 | Email relay | TODO(adil): Resend / Postmark / SES — deferred, needs domain setup |
 | Background job home (spec T4) | TODO(adil): scheduled TypeScript in-repo (recommended) vs separate Python process |
 

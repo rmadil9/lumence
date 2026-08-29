@@ -1,6 +1,6 @@
 # Lumence — Decision Log
 
-**Owner:** Adil · **Last updated:** 2026-08-27 · **Phase:** understanding (no product code yet)
+**Owner:** Adil · **Last updated:** 2026-08-29 · **Phase:** understanding (no product code yet)
 
 This is the one-page record of every judgement made on this project so far, who made it,
 what was rejected, and what it costs to undo. It exists so the reasoning survives the
@@ -166,6 +166,46 @@ point of this document.
 
 ---
 
+### ADR 0009 — Activity capture: fixed-window samples, buffered locally, pushed up
+- **Decided by:** Adil · 2026-08-29
+- **Verified, not assumed:** the laptop runs Wayland and GNOME's window-introspection service
+  is access-restricted on it. Checked during the session.
+- **Choice — on the laptop:** a background Python program samples every **15 seconds** and
+  writes each observation to a **local database file first**. A GNOME Shell extension supplies
+  the focused application (the only route available on Wayland); a browser extension supplies
+  the active website, reporting to the local program rather than to the server.
+- **Choice — getting it up:** a separate uploader ships unsent observations every ~60 seconds,
+  oldest first, 500 at a time, and marks them sent **only** when the server confirms. Any
+  failure changes nothing and retries.
+- **Choice — on the server:** every observation has a **unique key of (device, 15-second box)**
+  and the insert says "if it already exists, do nothing". Duplicate protection is enforced by
+  the database, not by code. Observations are filed by the time **inside** them, never by
+  arrival time, so a backlog lands in the hours it really happened.
+- **Choice — identity:** the laptop holds a revocable **device token**, not a password. The
+  server decides whose data it is; a user identifier sent by the client is never trusted.
+- **Rejected:** variable-length intervals ("VS Code, 10:04 to 10:19"). Fewer rows and exact to
+  the second, but a record left open by a crash is lost, and two intervals can partly overlap
+  and both save cleanly — double-counting the overlap. Fixed boxes cannot overlap.
+- **Adil's correction, recorded:** the AI framed this as one choice ("samples vs intervals").
+  Adil split it into two independent ones — *how long a record covers* (which sets crash loss)
+  and *whether it has a key* (which is not a trade-off but a requirement). The ADR is written
+  his way. He also raised the window from 5 seconds to 15.
+- **Why the idle rule lives on the server:** the laptop reports the raw fact "seconds since you
+  last touched anything" and discards nothing. Discarded data cannot be recovered, so changing
+  the threshold later would be impossible for every past day.
+- **Cost accepted:** a GNOME Shell extension is now a build item (~half a day) that can break on
+  a GNOME upgrade. ~2,400 rows per day per user. Idle records stored and never displayed.
+- **What this protects:** contingency ladder rung 1 stays cheap — the website is one optional
+  column, so dropping website tracking means *not building the browser extension*. Nothing else
+  changes and no data moves.
+- **Escape hatches, agreed while calm:** (1) log in under X11 instead — one dropdown, zero code;
+  (2) ladder rung 1; (3) last resort, capture goes and the timer reverts to an honour system.
+- **Still open:** the exact reading of the five-minute idle rule (spec D5). Deferred by Adil.
+- **Reversibility:** high on the pieces, moderate on the shape. The window length and the idle
+  threshold are tunable. Moving away from fixed boxes later would mean reprocessing history.
+
+---
+
 ## 3. Decisions made without a separate ADR
 
 | Decision | Made by | Reasoning |
@@ -192,9 +232,7 @@ point of this document.
 Kept open on purpose, so they are decided with full information rather than early and badly:
 
 - ~~**The technology stack**~~ — **decided 2026-08-27, ADR 0008.**
-- **How activity tracking actually works** — how the app in front of you and the website in
-  front of you get observed, and how that reaches the server. The riskiest unknown in the
-  project.
+- ~~**How activity tracking actually works**~~ — **decided 2026-08-29, ADR 0009.**
 - ~~**How authentication is built**~~ — **decided 2026-08-27, ADR 0008: Better Auth.**
 - **Which LLM provider** — the requirement is decided, the vendor is not.
 - **The data shape and API surface** — the hardest thing to change after the fact, so it is
@@ -220,6 +258,9 @@ There was a fourth — cutting X publishing — but that was already spent by AD
 ## 6. Still open, owned by Adil
 
 - **Non-negotiables** — what must never be traded away when the cuts above start. Unanswered.
+- **The five-minute idle rule, exact reading** (spec D5) — does the first five minutes of an
+  idle stretch still count, or is the whole stretch discarded once it crosses five minutes?
+  Deferred 2026-08-29. Changes the day view's numbers; blocks nothing in the schema.
 - **Credential rotation** from the leaked file in ADR 0001. Unactioned.
 
 ---

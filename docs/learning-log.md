@@ -17,3 +17,12 @@ One line per concept I met and what it means. My proof I am not vibe coding.
 | Container | Stack session: choosing Docker Compose | An app packaged together with its dependencies so it runs identically on any machine. |
 | Reverse proxy | Stack session: choosing nginx | The program in front of your app that accepts requests from the internet, handles HTTPS, and passes them through. |
 | TLS certificate renewal | Stack session: nginx has no automatic renewal, so Certbot is now our job | HTTPS certificates expire every ~90 days; something must renew them automatically, and the renewal must be tested, not assumed. |
+| Daemon | Capture session: something has to watch the desktop | A program that runs quietly in the background with no window — nothing tells it anything, it goes and looks. |
+| Wayland vs X11 | Capture session: my laptop is Wayland, so reading the focused window is restricted | The two ways a Linux desktop draws the screen; X11 lets any program see other windows, Wayland forbids it on purpose as a security feature. |
+| GNOME Shell extension | Capture session: the only way to see the focused app on Wayland | Code that runs inside the desktop itself, so it can see what an outside program is not allowed to. |
+| Offline backlog | Capture session: spec E10 | Observations piled up locally because the machine was awake and working but could not reach the server. |
+| Double-counting | Capture session: why a re-send is dangerous | The same stretch of time saved twice, because the server's confirmation was lost and the client sent it again. |
+| Unique key | Capture session: (device, 15-second box) on every activity sample | A column combination the database refuses to store twice — duplicate protection enforced by Postgres, not by code I can get wrong. |
+| Local buffer | Capture session: the SQLite file on my laptop | Writing data to disk before sending it, so a network failure delays delivery instead of destroying data. |
+| Device token | Capture session: how the daemon proves who it is | A long random string standing in for a password, scoped to one machine and revocable on its own. |
+| Trust boundary | Capture session: the daemon runs outside my server | The line past which you stop believing what a client tells you — the server decides whose data it is, never the client. |
