@@ -200,6 +200,20 @@ point of this document.
   changes and no data moves.
 - **Escape hatches, agreed while calm:** (1) log in under X11 instead — one dropdown, zero code;
   (2) ladder rung 1; (3) last resort, capture goes and the timer reverts to an honour system.
+- **Three follow-up calls, 2026-08-29:**
+  - **Desktop time is shown.** Sitting on the bare desktop with nothing open is active time
+    and appears as a row called "Desktop". Hiding it would understate the day twice over.
+  - **A locked screen counts as idle immediately.** Adil proposed using the screen blanking
+    as the idle trigger. Blanking cannot be the rule — its timeout differs per machine, per
+    user and per power source, and can be switched off — but the *locked* signal is
+    unambiguous, so it overrides the five-minute wait. One extra read per sample.
+  - **Passive media is a logged limitation, not a v1 feature.** Watching a long video without
+    touching anything reads as idle and gets discarded. The fix is real work and competes
+    with the riskiest slice. Wants a LOG line in the signed-off `02-spec.md` — flagged, not
+    added.
+- **Documented property, not a bug:** one glance per 15-second box means a box shared by two
+  applications goes entirely to whichever held focus at that instant. Over ~2,400 glances a
+  day the proportions are right; no single box is. Correct totals, not correct moments.
 - **Still open:** the exact reading of the five-minute idle rule (spec D5). Deferred by Adil.
 - **Reversibility:** high on the pieces, moderate on the shape. The window length and the idle
   threshold are tunable. Moving away from fixed boxes later would mean reprocessing history.

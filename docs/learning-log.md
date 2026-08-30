@@ -26,3 +26,5 @@ One line per concept I met and what it means. My proof I am not vibe coding.
 | Local buffer | Capture session: the SQLite file on my laptop | Writing data to disk before sending it, so a network failure delays delivery instead of destroying data. |
 | Device token | Capture session: how the daemon proves who it is | A long random string standing in for a password, scoped to one machine and revocable on its own. |
 | Trust boundary | Capture session: the daemon runs outside my server | The line past which you stop believing what a client tells you — the server decides whose data it is, never the client. |
+| Statistical sampling | Capture session: a 15-second box holding two different apps | Glancing at regular intervals instead of watching continuously — wrong about any single moment, right about the proportions over a day. |
+| Policy at query time | Capture session: where the 5-minute idle rule lives | Storing raw facts and applying the rule when you read, not when you write — so changing the rule later fixes all your history instead of being impossible. |

@@ -76,13 +76,31 @@ under 15 seconds may not appear at all; nothing in `02-spec.md` requires that re
    recovered, so changing the threshold later would be impossible for every past day; and it
    puts policy on the far side of the trust boundary.
 
+### What counts as the idle signal
+Adil proposed using the screen blanking as the trigger for idle rather than a fixed
+threshold. The instinct is right — the desktop already forms its own opinion about whether
+you are there — but blanking cannot be *the rule*: its timeout varies by machine, by user,
+and by whether the laptop is on battery or mains, so identical behaviour would produce
+different numbers on different days, and it can be switched off entirely.
+
+**Chosen: keep the five-minute no-input threshold as the rule, and add a screen-locked flag
+as an immediate override.** A locked screen means the user is away with no ambiguity and no
+waiting — it removes the five minutes of counted time that lock-and-walk-away would
+otherwise burn. It costs one extra D-Bus read per sample.
+
 ## Decision
 
 **On the laptop**
 - A Python daemon starts at login. Every 15 seconds it records one **`ActivitySample`**:
-  the focused application, the active browser domain if known, and the seconds since the
-  last keyboard or mouse input. Its timestamp is rounded down to the start of its 15-second
-  box, so records from different daemon runs land on the same grid.
+  the focused application, the active browser domain if known, the seconds since the last
+  keyboard or mouse input, and **whether the screen is locked**. Its timestamp is rounded
+  down to the start of its 15-second box, so records from different daemon runs land on the
+  same grid.
+- **Time on the bare desktop with no window open is recorded like any other application**
+  and displayed as **"Desktop"**. The user is active — input is happening — so the idle rule
+  does not apply to it. Hiding it would make the day total understate genuinely active time
+  on top of the idle time already removed. Recording it and displaying it are separate
+  choices; the display half can be flipped later at no cost.
 - The focused application is read from a **GNOME Shell extension** exposing it to the daemon.
 - The active browser domain comes from a **browser extension** which reports to the daemon
   over localhost. JavaScript, because a browser extension has no other option.
@@ -130,6 +148,22 @@ under 15 seconds may not appear at all; nothing in `02-spec.md` requires that re
 - **A GNOME Shell extension is now a build item**, roughly half a day, and it is a component
   that can break on a GNOME upgrade. That is an ongoing maintenance cost on Adil's own
   machine, not on the server.
+- **Sampling gives correct totals, not correct moments.** The daemon glances once per
+  15-second box, and whatever holds focus at that instant is credited with the whole box. A
+  box containing seven seconds of one application and eight of another goes entirely to one
+  of them. Across ~2,400 glances a day the proportions come out right — an application used
+  for 40% of the day catches roughly 40% of the glances — but no individual box should be
+  trusted. The failure mode is an application touched for only a few seconds, which may never
+  be caught at all. Accepted: the alternative is variable-length intervals, which reopens both
+  the crash-loss and the double-counting problems this ADR exists to close.
+- **Known limitation, logged and deliberately not built: passive media reads as idle.**
+  Watching a forty-minute video without touching the keyboard or mouse trips the five-minute
+  threshold, and thirty-five minutes of genuinely engaged time is discarded. The real fix is
+  to ask the system whether an application is actively preventing the screen from sleeping —
+  which video players do — and treat that as active. Decided by Adil on 2026-08-29 to log it
+  rather than build it, because it competes with the riskiest slice in the project. **This
+  wants a `LOG` line in the edge-case table of `02-spec.md`, which is signed off — flagged
+  for Adil, not added.**
 - **Storage grows steadily** — ~2,400 rows per user per ten-hour day, roughly 0.9M rows a
   year for one user. Trivial for Postgres, but the day view and session review must
   aggregate rather than fetch rows, and the table will need an index on (user, sample time).
