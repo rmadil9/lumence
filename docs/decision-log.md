@@ -214,7 +214,15 @@ point of this document.
 - **Documented property, not a bug:** one glance per 15-second box means a box shared by two
   applications goes entirely to whichever held focus at that instant. Over ~2,400 glances a
   day the proportions are right; no single box is. Correct totals, not correct moments.
-- **Still open:** the exact reading of the five-minute idle rule (spec D5). Deferred by Adil.
+- **The five-minute idle rule — resolved 2026-09-02. AI recommended Reading A and was
+  overruled.** Adil chose **Reading B**: once a stretch of no input reaches five minutes, the
+  **whole** stretch is thrown away, including its first five minutes. Walk away for thirty
+  minutes and it contributes zero, not five. The AI argued for Reading A — keep the first five
+  minutes, since silence is often reading or thinking — and that it is a one-line comparison.
+  **Cost accepted:** Reading B cannot be judged one sample at a time; the day view must group
+  consecutive no-input samples into stretches and drop whole stretches. Standard SQL, more of
+  it. Day totals come out lower, and reading a long document without touching anything counts
+  for nothing.
 - **Reversibility:** high on the pieces, moderate on the shape. The window length and the idle
   threshold are tunable. Moving away from fixed boxes later would mean reprocessing history.
 
@@ -282,6 +290,9 @@ point of this document.
 | **Chat history is not saved** — closing the browser clears it | Adil | Matches how he uses ChatGPT today: paste, refine, copy out. |
 | **Email verification stays a link, not a typed code** | Adil · 2026-09-02 | Confirmed against spec A2. Nothing to change. |
 | **LLM capped at 20 chat turns per user per day** | Adil | Cost control on a metered API. Explicitly *not* a paid plan tier — pricing is v2. |
+| **A completed todo can be reopened; no todo status is final** | Adil · 2026-09-02 | Spec T3 describes setting status freely. |
+| **A chat turn is counted only when it succeeds** | Adil · 2026-09-02 | A reply that dies partway is not charged against the 20 and can be retried. |
+| **One device per user in v1** | Adil · 2026-09-02 | Device stays part of the activity key, so more devices later need no migration. |
 | **Idle time is discarded, never displayed** — 5 minutes of no keyboard or mouse and that time is thrown away | Adil | Without it, walking away for two hours reads as two hours of browsing, and the day view lies. Daily totals will be less than a full day; that gap is away time and is deliberately not named. |
 | **One timezone (Adil's).** Multi-timezone users are written down, not built | Adil | Correct day boundaries for one person is a real problem; for everyone is a bigger one. |
 | **10 edge cases in, 4 written down and skipped** | Adil | Decided at spec time so they are never "discovered" mid-build. |

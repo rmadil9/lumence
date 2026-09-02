@@ -32,3 +32,4 @@ One line per concept I met and what it means. My proof I am not vibe coding.
 | Account takeover via linking | Auth session: joining a Google sign-in to an existing password account | Letting two sign-in routes join on a matching email alone, so an unverified signup on someone else's address hands its password a real account. |
 | Ubiquitous language | Domain session: 'session' meant two different things | Agreeing one word per concept and using it in code, database, UI and docs alike, so a conversation can never be ambiguous. |
 | Invariant | Domain session: writing the rules that must never break | A rule that is true at every moment, no matter what happens — the thing you check a design against, not a feature you build. |
+| Gaps and islands | Idle Reading B: discarding whole no-input stretches | A standard SQL shape for grouping consecutive rows into runs, so a rule can be applied to the whole run rather than to each row on its own. |

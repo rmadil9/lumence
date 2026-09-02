@@ -180,14 +180,28 @@ Agreed now, while calm, so capture never presents a cliff:
 3. **Last resort** — capture goes, and the lock-in timer reverts to an honour system. That
    is the product losing its spine, and it is what the rungs above exist to avoid.
 
-## Open, owned by Adil
-- **TODO(adil): the exact reading of the five-minute idle rule (spec D5).** Two readings,
-  both defensible, and the decision changes the day view's numbers:
-  - **Reading A** — the first five minutes of an idle stretch still count; everything past
-    five minutes is discarded. One comparison per sample, no backward reasoning.
-  - **Reading B** — once a stretch passes five minutes, the whole stretch is discarded
-    retroactively, including its first five minutes.
-  Deferred by Adil on 2026-08-29. Blocks nothing in the schema — only the aggregation query.
+## The five-minute idle rule — resolved 2026-09-02
+Decided by Adil. **AI recommended Reading A and was overruled.**
+
+- **Reading A (recommended, rejected)** — the first five minutes of a no-input stretch still
+  count; only the time past five minutes is discarded. One comparison per sample
+  (`idle_seconds <= 300`), no backward reasoning. Argued on the grounds that five minutes of
+  silence is often reading, thinking, or a phone call — real work at the machine.
+- **Reading B (chosen)** — once a stretch reaches five minutes, **the whole stretch is
+  discarded, including its first five minutes.** Walking away for thirty minutes contributes
+  zero. A stretch that ends before five minutes counts in full.
+
+**What Reading B costs.** It cannot be evaluated one sample at a time. The aggregation must
+first group consecutive no-input samples into *stretches*, take each stretch's maximum
+idle value, and drop every sample in any stretch that reached the threshold. That is a
+standard gaps-and-islands window query — well-trodden SQL, but not the single `WHERE` clause
+Reading A would have been. `04-contracts.md` carries it.
+
+**Consequences.** Day totals will be lower than under Reading A, and reading a long document
+without touching anything contributes nothing at all. That is the honest version of the
+number Adil wants. The threshold remains changeable, because the raw facts are still stored
+and nothing is discarded at write time — which is the whole reason the rule lives at query
+time.
 
 ## What would make us revisit
 - The GNOME Shell extension route failing or costing materially more than half a day. The

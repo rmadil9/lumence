@@ -77,7 +77,7 @@ In short: answer in points, plain words, keep it short, and commit without askin
 | [00-process.md](docs/00-process.md) | Dominant risk, process model, **contingency ladder**, exit criteria |
 | [01-problem.md](docs/01-problem.md) | Who has the pain, measurable success criteria, non-goals |
 | [02-spec.md](docs/02-spec.md) | v1 behaviours in and explicitly out |
-| [03-domain.md](docs/03-domain.md) | Entities, lifecycle states, invariants, ubiquitous language — **drafted, awaiting Adil's corrections** |
+| [03-domain.md](docs/03-domain.md) | Entities, lifecycle states, invariants, ubiquitous language — **signed off 2026-09-02** |
 | [04-contracts.md](docs/04-contracts.md) | Data schema + API surface — the lock-in point |
 | [05-architecture.md](docs/05-architecture.md) | Component boundaries, deployment topology |
 | [adr/](docs/adr/) | One irreversible decision each |

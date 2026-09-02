@@ -92,9 +92,9 @@ One exchange with the LLM.
   chat (spec M4). There is no stored conversation and no history.
 - The **only** thing kept about chat is **how many turns a user has spent today**, because of
   the cap (M5).
-- **TODO(adil):** whether a turn is counted when it is *sent* or when it *succeeds*. It
-  matters for spec M6 — a reply that dies partway. My reading: count on success, so a failed
-  turn is not charged against the cap and can be retried. Confirm or correct.
+- **A turn is counted only when it succeeds** (Adil, 2026-09-02). A reply that dies partway
+  is not charged against the cap and can be retried — which is what makes spec M6 and E4
+  humane rather than punishing.
 
 ### Device
 One machine registered to report activity.
@@ -104,8 +104,9 @@ One machine registered to report activity.
   own ([ADR 0009](adr/0009-activity-capture-fixed-window-samples.md)).
 - Exists so that two machines reporting the same moment are two real observations rather than
   a collision.
-- **TODO(adil):** whether a user may register more than one device in v1. The design supports
-  it; the spec never says. Nothing breaks either way.
+- **One device per user in v1** (Adil, 2026-09-02). The device is still part of the activity
+  sample's key, so the design supports more later with no migration — v1 simply refuses to
+  register a second one.
 
 ### Activity sample
 One 15-second observation. The highest-volume thing in the product, ~2,400 per user per
@@ -155,12 +156,14 @@ idle rule is applied when the day view is read, never when the sample is written
 ### Todo
 
 ```
-   created ──► pending ⇄ in-progress ──► completed
-                  │           │
-                  └─────┬─────┘
+   created ──► pending ⇄ in-progress ⇄ completed
+                  │           │            │
+                  └─────┬─────┴────────────┘
                         ▼
                      delayed          (set automatically at the day boundary,
                                        and also settable by hand)
+
+   every arrow runs both ways — no status is final, completed included
 ```
 
 - All four states are set by the user (spec T3).
@@ -168,9 +171,8 @@ idle rule is applied when the day view is read, never when the sample is written
   becomes `delayed` at the day boundary (T4).
 - That flip must be **correct whether or not the app was open at midnight** (T4, E11). It is
   therefore a property of time passing, not of anyone looking.
-- **TODO(adil):** whether `completed` is final, or whether a completed todo can be reopened to
-  `pending`. The spec does not say. My reading: reopening is allowed, since T3 describes
-  setting status freely. Confirm or correct.
+- **A completed todo can be reopened** (Adil, 2026-09-02). `completed` is not final — status
+  moves freely in any direction, consistent with spec T3.
 - Deletion is available from **any** state and is permanent (T5).
 
 ### Lock-in
@@ -240,11 +242,13 @@ has already passed.
 **Chat**
 15. A user's chat turns in one day **never exceed 20** (M5). The 21st is refused with a clear
     message.
+15a. **Only a successful turn is counted.** A failed reply costs the user nothing.
 16. The count resets at the day boundary (M5).
 17. **No chat conversation is ever stored** (M4).
 18. A failed reply leaves **no half-written message** anywhere (M6, E4).
 
 **Activity**
+18a. **A user has at most one device in v1.** Registering a second is refused.
 19. **At most one activity sample per (device, box).** A second one for the same pair is
     silently ignored, not an error — this is what makes a replayed backlog safe (E10,
     ADR 0009).
@@ -252,6 +256,14 @@ has already passed.
 21. A sample is **never modified after it is written.**
 22. **No rule is applied at write time.** The five-minute idle rule is applied when the day
     view is read (ADR 0009).
+22a. **Idle is all-or-nothing per stretch (Reading B, Adil 2026-09-02).** A continuous run of
+    samples with no keyboard or mouse input is one *stretch*. If a stretch ever reaches five
+    minutes, **the entire stretch is discarded — including its first five minutes.** Walking
+    away for thirty minutes contributes zero, not five minutes. A stretch that ends before
+    five minutes counts in full.
+22b. **My reading, correctable:** a stretch during which the screen becomes **locked** is
+    discarded in full as well, however short it was — a locked screen is unambiguous absence
+    (ADR 0009). Nothing in the spec states this directly; it follows from 22a's spirit.
 
 **Time**
 23. **All timestamps are stored in UTC.** Days are worked out in **one fixed timezone** —
@@ -282,10 +294,11 @@ Named here so they are never quietly reintroduced:
 
 ## 6. Open — for Adil
 
-1. **Chat turn counting** — on send, or on success? (§2, Chat turn)
-2. **Reopening a completed todo** — allowed, or is `completed` final? (§3, Todo)
-3. **More than one device per user in v1** — supported by the design, unstated by the spec.
-   (§2, Device)
-4. **The five-minute idle rule, exact reading** — carried over from ADR 0009. Does the first
-   five minutes of an idle stretch still count, or is the whole stretch discarded once it
-   crosses five minutes? Blocks nothing in the schema; changes the day view's numbers.
+**Nothing. All four questions were resolved on 2026-09-02:**
+
+- Chat turns count **on success only** — a failed reply costs nothing.
+- A completed todo **can be reopened**; no status is final.
+- **One device per user** in v1.
+- The five-minute idle rule takes **Reading B** — see invariant 22a.
+
+This document is **signed off**. Changes from here need an ADR.
