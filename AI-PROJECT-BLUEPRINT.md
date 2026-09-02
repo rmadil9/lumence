@@ -6,29 +6,7 @@
 
 ---
 
-## 0. WHAT I AM BUILDING — fill this in
 
-```
-PRODUCT NAME:        <<< lumence >>>
-ONE SENTENCE:        <<< unknown >>>
-TARGET USER:         <<< unknown >>>
-WHY ME / WHY NOW:    <<< unknown >>>
-
-BUSINESS MODEL:      <<< paid / SAAS product >>>
-FIRST REAL USER:     <<< unknown >>>
-HARD DEADLINE:       <<< unknown >>>
-TIME AVAILABLE:      <<< 10 hours a day >>>
-
-STACK I ALREADY KNOW:      <<< unknown >>>
-STACK I WANT TO LEARN:     <<< unknown >>>
-STACK CONSTRAINTS:         <<< unknown>>>
-DEPLOY TARGET:             <<< VPS 16 GB RAM / 100 SSD >>>
-BUDGET/MONTH:              <<< $ 0 >>>
-
-WHAT I ALREADY HAVE:        <<< unknown >>>
-WHAT I KNOW THAT YOU DON'T: <<< unknown >>>
-NON-NEGOTIABLES:            <<< unknown >>>
-```
 
 ## 1. MY GOAL FOR THIS PROJECT — do not skip
 
@@ -154,7 +132,7 @@ CLAUDE.md              # agent context: conventions, commands, index of the abov
 **Rules for these docs:**
 - Written *before* the code they govern. Updated the moment reality diverges.
 - Each one gets my explicit sign-off before we move to the next. Don't batch them.
-- For every doc, **interview me first**, then draft, then let me correct. Never invent domain facts — mark unknowns as `TODO(adil):`.
+- For every doc, **interview me first**, then draft, then let me correct. Never invent domain facts — mark unknowns as `TODO(user):`.
 - ADRs use: Context → Options considered → Decision → Consequences → What would make us revisit.
 
 ---

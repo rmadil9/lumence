@@ -1,6 +1,6 @@
 # Lumence — Decision Log
 
-**Owner:** Adil · **Last updated:** 2026-08-29 · **Phase:** understanding (no product code yet)
+**Owner:** Adil · **Last updated:** 2026-09-02 · **Phase:** understanding (no product code yet)
 
 This is the one-page record of every judgement made on this project so far, who made it,
 what was rejected, and what it costs to undo. It exists so the reasoning survives the
@@ -220,6 +220,29 @@ point of this document.
 
 ---
 
+### ADR 0010 — OpenAI as the LLM provider, behind an adapter
+- **Decided by:** Adil · 2026-09-02 · **AI recommended a different provider and was overruled.**
+- **Choice:** OpenAI, reached through the provider-agnostic adapter already promised in
+  `CLAUDE.md` — one module holds the vendor name and the key, nothing else in the codebase
+  knows which provider is in use.
+- **Rejected:** Anthropic (recommended, because current pricing and API shape were verifiable
+  in-session so the ADR could carry real numbers); Google Gemini (cheapest at the low end).
+- **Why:** Adil already uses ChatGPT daily. `01-problem.md` sets the bar as "must not be more
+  steps than copy-paste into ChatGPT already is", so output that reads the way he expects is
+  part of the requirement, not a preference.
+- **Still open:** the exact model. Deliberately not pinned — it is a quality-versus-cost
+  judgement to make against real output on his own writing, and the adapter makes it a
+  one-line change.
+- **Cost control is the 20-turn-per-user-per-day cap and nothing else.** Confirmed 2026-09-02.
+- **Cost hole, raised once and accepted:** the cap limits what one person spends; it does not
+  limit how many people sign up, and ADR 0005 gives open signup with no billing. A hundred
+  users at the cap is a real bill on Adil's card. **Adil chose to accept it and watch the
+  bill.** The fix, if ever needed, is one global daily counter that switches the chat surface
+  off for the rest of the day — additive, so deferring it costs no rework.
+- **Reversibility:** high. That is the entire point of the adapter.
+
+---
+
 ## 3. Decisions made without a separate ADR
 
 | Decision | Made by | Reasoning |
@@ -248,7 +271,7 @@ Kept open on purpose, so they are decided with full information rather than earl
 - ~~**The technology stack**~~ — **decided 2026-08-27, ADR 0008.**
 - ~~**How activity tracking actually works**~~ — **decided 2026-08-29, ADR 0009.**
 - ~~**How authentication is built**~~ — **decided 2026-08-27, ADR 0008: Better Auth.**
-- **Which LLM provider** — the requirement is decided, the vendor is not.
+- ~~**Which LLM provider**~~ — **decided 2026-09-02, ADR 0010: OpenAI.** Exact model still open.
 - **The data shape and API surface** — the hardest thing to change after the fact, so it is
   deliberately last.
 

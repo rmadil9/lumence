@@ -36,7 +36,7 @@ tracking is cut ([ADR 0004](docs/adr/0004-drop-per-todo-time-tracking.md)).
 Deployment and auth model settled earlier:
 - **Deployment model:** everything self-hosted on one VPS — [ADR 0002](docs/adr/0002-self-host-on-a-single-vps.md)
 - **Auth model:** self-hosted, multi-user with open signup — [ADR 0005](docs/adr/0005-full-email-auth-plus-google-oauth.md)
-- **LLM:** a paid API behind a provider-agnostic adapter — provider pending, ADR pending
+- **LLM:** OpenAI behind a provider-agnostic adapter — [ADR 0010](docs/adr/0010-llm-provider-openai-behind-an-adapter.md). Exact model TODO(adil)
 - **Archived prior project discarded, not extended** — [ADR 0001](docs/adr/0001-discard-archived-codebase.md)
 
 Scope decisions from the spec session (2026-08-26): [ADR 0004](docs/adr/0004-drop-per-todo-time-tracking.md)
