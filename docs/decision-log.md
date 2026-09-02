@@ -243,6 +243,31 @@ point of this document.
 
 ---
 
+### ADR 0011 — One account per email; linking requires a verified email
+- **Decided by:** Adil · 2026-09-02 · auth rule, put to him explicitly because `CLAUDE.md`
+  places auth and permission rules on the human veto list.
+- **Choice:** an email address identifies exactly one user. Google links to an existing account
+  **only when that account's email is already verified**. Where the existing account is
+  unverified, the Google sign-in takes ownership of the address and **the unverified password
+  credential is discarded**.
+- **Rejected:** linking on an email match alone (one flag, simplest — and it leaves the
+  takeover route open); refusing the Google sign-in until the person signs in with their
+  password first (safe, but a dead end for someone who forgot they had a password account).
+- **Why:** anyone can type anyone's email into a signup form. An attacker signs up with your
+  email and their own password, never verifies, and waits. You later sign in with Google. If
+  the two are joined purely on the matching address, **their password now works on your
+  account.** The unverified account holding no data is not the problem — it holds a *password*,
+  and linking hands that password a populated account.
+- **Cost accepted:** someone who genuinely starts a password signup, never opens the
+  verification email, then signs in with Google will find their chosen password no longer
+  works. They lose no data — spec A1 means the unverified account never held any.
+- **Free:** Better Auth exposes this as a setting, so the safe rule costs the same as the
+  unsafe one. There was no schedule argument for the weaker option.
+- **Reversibility:** high as configuration; but the weaker setting is a security regression,
+  not a preference.
+
+---
+
 ## 3. Decisions made without a separate ADR
 
 | Decision | Made by | Reasoning |
@@ -255,6 +280,7 @@ point of this document.
 | **v1 is for real users, not an audience of one** | Adil | Makes open signup a genuine requirement rather than an exercise. |
 | **One single scratchpad, plain text** — not multiple notes, no formatting | Adil | Replaces one LibreOffice document. Anything more is scope. |
 | **Chat history is not saved** — closing the browser clears it | Adil | Matches how he uses ChatGPT today: paste, refine, copy out. |
+| **Email verification stays a link, not a typed code** | Adil · 2026-09-02 | Confirmed against spec A2. Nothing to change. |
 | **LLM capped at 20 chat turns per user per day** | Adil | Cost control on a metered API. Explicitly *not* a paid plan tier — pricing is v2. |
 | **Idle time is discarded, never displayed** — 5 minutes of no keyboard or mouse and that time is thrown away | Adil | Without it, walking away for two hours reads as two hours of browsing, and the day view lies. Daily totals will be less than a full day; that gap is away time and is deliberately not named. |
 | **One timezone (Adil's).** Multi-timezone users are written down, not built | Adil | Correct day boundaries for one person is a real problem; for everyone is a bigger one. |
