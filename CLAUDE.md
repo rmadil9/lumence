@@ -11,7 +11,8 @@ verifiable rather than an honour system. Treat it as core, not as an accessory.
 
 ## Status
 Understanding phase. **No product code yet.** Stack is chosen ([ADR 0008](docs/adr/0008-stack-single-nextjs-app-on-docker.md))
-and activity capture is designed ([ADR 0009](docs/adr/0009-activity-capture-fixed-window-samples.md)).
+activity capture is designed ([ADR 0009](docs/adr/0009-activity-capture-fixed-window-samples.md)),
+`03-domain.md` is signed off, and `04-contracts.md` is drafted in full and awaiting sign-off.
 `02-spec.md` is drafted and awaiting sign-off — v1 has **five surfaces**: auth, todos,
 lock-in timer, notepad (with LLM chat and an X link), and day analytics. Per-todo time
 tracking is cut ([ADR 0004](docs/adr/0004-drop-per-todo-time-tracking.md)).
@@ -78,7 +79,7 @@ In short: answer in points, plain words, keep it short, and commit without askin
 | [01-problem.md](docs/01-problem.md) | Who has the pain, measurable success criteria, non-goals |
 | [02-spec.md](docs/02-spec.md) | v1 behaviours in and explicitly out |
 | [03-domain.md](docs/03-domain.md) | Entities, lifecycle states, invariants, ubiquitous language — **signed off 2026-09-02** |
-| [04-contracts.md](docs/04-contracts.md) | Data schema + API surface — the lock-in point |
+| [04-contracts.md](docs/04-contracts.md) | Data schema + API surface + tracker ingest — **drafted in full 2026-09-03, awaiting sign-off. The lock-in point** |
 | [05-architecture.md](docs/05-architecture.md) | Component boundaries, deployment topology |
 | [adr/](docs/adr/) | One irreversible decision each |
 | [slices.md](docs/slices.md) | Risk-ordered delivery backlog + retro lines |

@@ -313,10 +313,13 @@ design. An **HTTP route handler** is a conventional endpoint at a URL.
 - **The tracker ingest endpoint → a real HTTP route** (part 3). It is called by a Python daemon,
   which cannot invoke a Server Action. It needs a stable URL and its own authentication.
 
-**This document defines the operations, not the transport.** The list below is the contract
-either way — the same inputs, the same rules, the same errors. **TODO(adil): confirm the split**;
-the alternative is conventional REST routes throughout, which is more code but easier to call
-from outside the app, and easier to test with `curl`.
+**Decided (Adil, 2026-09-03): the split above.** Server Actions for everything the Lumence user
+interface calls; a real HTTP route for ingest only. Rejected: conventional REST routes
+throughout — more code to write and maintain, and its advantages (callable with `curl`, testable
+from outside) matter only for the one surface that is already an HTTP route.
+
+**This document defines the operations, not the transport.** The list is the contract either
+way — the same inputs, the same rules, the same errors.
 
 ## 2.2 Authentication — owned by Better Auth
 
@@ -393,10 +396,12 @@ Covers spec A1–A6. Two configuration facts this contract depends on:
 - **Saving sends the whole content.** It is plain text and there is one of them; a diff or patch
   format would be machinery for no gain.
 - **`updatedAt` is sent back with the save** so the server can tell whether it is writing over a
-  version the client had not seen — two tabs, or a slow reply that arrived out of order. The
-  client is told rather than silently losing keystrokes. **TODO(adil): what should happen on that
-  conflict?** My reading: last write wins, but the client is told, so it can warn rather than
-  fail. Nothing in the spec covers two tabs on the notepad.
+  version the client had not seen — two tabs, or a slow reply that arrived out of order.
+  **Decided (Adil, 2026-09-03): last write wins, and the client is told.** The save succeeds, and
+  the response says the version it replaced was not the one the client held, so the interface can
+  warn rather than pretend nothing happened. Refusing the write instead would mean a person loses
+  what they just typed, which spec E9 exists to prevent. Nothing in the spec covers two tabs on
+  the notepad; this fills the gap in the direction E9 points.
 - **Spec E9 — the connection dropping mid-save — is a client responsibility**, and the contract
   is what makes it possible: saving is **idempotent**, so the client can hold unsent text and
   retry until it is acknowledged. Sending the same content twice changes nothing.
@@ -460,13 +465,205 @@ Covers spec A1–A6. Two configuration facts this contract depends on:
 - **Revoking does not delete the device or its samples.** It sets `revoked_at`, ingest starts
   refusing that token, and the history stays (§1.5).
 
-## 2.9 Part 2 — open for Adil
+## 2.9 Part 2 — resolved
 
-1. **Server Actions for the user interface, HTTP routes only for ingest** — confirm, or use
-   conventional REST routes throughout? (§2.1)
-2. **Notepad save conflict** — two tabs, or an out-of-order reply. Last-write-wins with the
-   client told, or something stricter? Not covered by the spec. (§2.5)
+Both questions closed on 2026-09-03: **Server Actions for the interface, an HTTP route for
+ingest only**; notepad saves are **last-write-wins, with the client told** when it overwrote a
+version it had not seen.
 
 # Part 3 — Ingest contract for the tracker
 
-> **Not yet drafted.** Batch size, idempotency key, clock-skew handling, backlog replay.
+> Drafted 2026-09-03. This is the seam [ADR 0003](adr/0003-no-spike-phase.md) warned about: it
+> is being locked **before any capture client has run against it**, because the spike that would
+> have priced it was cut. Everything here is therefore written to be forgiving — the failure
+> modes matter more than the happy path.
+
+## 3.0 What this contract is, and what it deliberately is not
+
+**It is:** the one HTTP endpoint the Python daemon on Adil's laptop posts activity samples to.
+
+**It is not** the link between the browser extension and the daemon. That conversation happens
+entirely on Adil's laptop, over localhost, inside his own machine
+([ADR 0009](adr/0009-activity-capture-fixed-window-samples.md)). It is **deliberately left
+unspecified here** so it can change freely without touching anything the server knows about.
+That freedom is the point of routing the extension through the daemon rather than to the VPS.
+
+## 3.1 The endpoint
+
+```
+POST /api/ingest/activity
+Authorization: Bearer <device token>
+Content-Type: application/json
+```
+
+- **A real HTTP route**, not a Server Action (§2.1). A Python daemon cannot call a Server Action.
+- **It does not use the auth session.** There is no cookie, no browser, no signed-in user. The
+  device token is the only credential.
+- **The server hashes the presented token and looks up the device** (§1.5). It never stores or
+  compares plain tokens.
+- **A revoked device is refused** — `revoked_at` set means every request fails from then on.
+- **The user is resolved from the device.** The request body has no user field and never will;
+  a body that contained one would be ignored, not honoured (invariant 4).
+
+## 3.2 The request
+
+```json
+{
+  "clientSentAt": "2026-09-03T14:32:10.412Z",
+  "samples": [
+    {
+      "boxStart": "2026-09-03T09:15:00.000Z",
+      "application": "Code",
+      "domain": null,
+      "idleSeconds": 3,
+      "screenLocked": false
+    }
+  ]
+}
+```
+
+| Field | Rule |
+|---|---|
+| `clientSentAt` | Required. What the laptop believed the time was when it sent. **Diagnostic only** — no behaviour depends on it |
+| `samples` | Required. **1 to 500 entries**, oldest first |
+| `boxStart` | Required, UTC, and **must fall exactly on a 15-second boundary**. Anything else is a daemon bug |
+| `application` | Required, non-empty. `"Desktop"` for the bare desktop with nothing open (ADR 0009) |
+| `domain` | Optional, and **null is the normal case** — present only when the focused application is a browser and the extension is installed |
+| `idleSeconds` | Required, zero or greater. Seconds since the last keyboard or mouse input |
+| `screenLocked` | Required boolean |
+
+- **500 is the batch ceiling** so that replaying a long backlog never becomes one enormous
+  request that times out halfway (ADR 0009).
+- **Request bodies are capped** — **TODO(adil):** at what size. 500 samples is on the order of
+  100 KB; a 1 MB cap leaves generous headroom and stops a malformed client from sending
+  something absurd.
+- **Ordering between batches is not required.** Each sample carries its own `boxStart`, so a
+  batch about yesterday may arrive after a batch about today with no ill effect.
+
+## 3.3 How duplicates are handled — the whole point
+
+Every sample is inserted against the primary key **`(device_id, boxStart)`** with *"if this key
+already exists, do nothing"* (§1.6).
+
+- **A batch may be sent any number of times with the same result as sending it once.** This is
+  spec **E10**, the riskiest line in `02-spec.md`, and it is answered by a key and one clause of
+  SQL rather than by logic that reconciles overlapping time ranges.
+- The case this exists for is not exotic: the server commits the batch, the acknowledgement is
+  lost on a flaky connection, the daemon assumes failure and re-sends. Without the key that is a
+  doubled day. With it, nothing happens.
+- **Duplicates are a success, not an error.** They are counted and reported, never rejected.
+
+## 3.4 The response
+
+```json
+{
+  "requestId": "...",
+  "accepted": 480,
+  "duplicates": 19,
+  "rejected": [{ "index": 12, "reason": "boxStart not on a 15-second boundary" }],
+  "serverTime": "2026-09-03T14:32:11.002Z",
+  "clockSkewSeconds": 0.6
+}
+```
+
+- **`accepted` + `duplicates` + `rejected.length` always equals the number of samples sent.**
+- **`serverTime` and `clockSkewSeconds` are returned on every request** so the daemon can log a
+  warning when the laptop's clock has drifted. The server records the skew too. A wrong clock is
+  thereby **visible** rather than quietly corrupting a day.
+
+## 3.5 A bad sample must never wedge the backlog
+
+**One invalid sample does not fail the batch.** Valid samples are accepted, invalid ones are
+listed in `rejected`, and the response is a success.
+
+This is the most important failure-mode decision in this contract. The alternative — rejecting
+the whole batch because one sample is malformed — creates a **poison pill**: the daemon retries
+the batch forever, it fails forever, and every sample behind it in the queue is stuck. Hours of
+genuine activity would be lost behind one bad row. Accepting what is valid and reporting what is
+not means the queue always drains.
+
+**On a success response the daemon marks every sample in the batch as sent** — accepted,
+duplicate and rejected alike. A rejected sample is rejected deterministically and would be
+rejected again on every retry, so keeping it achieves nothing.
+
+## 3.6 Errors, and what the daemon does about each
+
+The daemon must treat these differently, or it will either wedge or lose data.
+
+| Status | Means | The daemon must |
+|---|---|---|
+| `200` | Processed, possibly with rejections | **Mark the batch sent.** Move on |
+| `400` | The request itself is malformed — not one sample, the whole envelope | **Not retry.** Log loudly; this is a bug in the daemon, and retrying cannot fix it |
+| `401` | Unknown, revoked, or missing token | **Stop uploading and say so.** Keep buffering. Retrying will never help until a human re-registers the device |
+| `413` | Body too large | **Not retry as-is.** Halve the batch size and try again |
+| `429` | Too many requests | **Retry after backing off**, honouring any interval the response gives |
+| `5xx` | The server failed | **Retry with increasing backoff.** Change nothing |
+| network failure / timeout | Never reached the server, or the reply was lost | **Retry.** This is the case §3.3 makes safe |
+
+**The rule underneath the table:** the daemon marks samples as sent **only** on a `200`. Every
+other outcome leaves them buffered. It is always safe to send again; it is never safe to assume
+a lost reply meant failure.
+
+## 3.7 Clock skew
+
+The laptop's clock can be wrong. Nothing here tries to correct it.
+
+- **A sample is always filed by its own `boxStart`** (invariant 20). Arrival time is never used
+  to decide which day a sample belongs to — that is what makes a six-hour backlog land in the
+  hours it actually happened.
+- **Skew is recorded and returned** (§3.4), so a broken clock shows up in logs instead of
+  silently producing a wrong day.
+- **Samples timestamped far in the future are rejected**, as a sanity guard against a badly wrong
+  clock. **TODO(adil): how far is far.** My reading: reject beyond about 24 hours ahead. Tighter
+  than that risks discarding real data from a mildly wrong clock; looser lets nonsense in. Old
+  timestamps are **always** accepted, however old — that is the backlog case, and it is normal.
+
+## 3.8 Rate limiting
+
+- Normal operation is **one request per device roughly every 60 seconds** (ADR 0009).
+- Backlog replay is faster and legitimately so: a six-hour backlog is about 1,440 samples, which
+  is three batches, sent back to back.
+- **TODO(adil): the limit.** My reading: generous per device — a few requests per second, enough
+  that a replay never trips it — and rely on the token, not the rate limit, as the real defence.
+  The device is authenticated; it is not an anonymous endpoint.
+
+## 3.9 Versioning — the daemon updates on a different schedule from the server
+
+The server is redeployed whenever Adil deploys. **The daemon is a separate program on his own
+laptop and updates whenever he remembers.** They will therefore be different versions, routinely
+and for long stretches.
+
+**The policy that follows:**
+- **The server must keep accepting requests from older daemons indefinitely.** It is the half
+  that changes without warning.
+- **Additive changes only** at this URL: new optional fields may appear; existing fields never
+  change meaning and are never removed.
+- **A genuinely breaking change gets a new path**, and the old one keeps working until Adil has
+  confirmed every device has been updated.
+- Nothing here needs building in v1 — but the URL is being locked now, and this is the rule that
+  keeps it locked safely.
+
+## 3.10 What the server never does
+
+Stated plainly because each one is a rule that a future change could quietly break:
+
+1. **Never trusts a user identifier from the client.** The user comes from the device token
+   (invariant 4).
+2. **Never files a sample by arrival time.** Only by `boxStart` (invariant 20).
+3. **Never modifies or deletes a sample** once written (invariant 21).
+4. **Never applies the idle rule at write time.** It stores facts; the day view applies the rule
+   (invariant 22, ADR 0009).
+5. **Never rejects a whole batch for one bad sample** (§3.5).
+6. **Never returns a plain device token.** Only the hash is stored; the token is shown once at
+   registration and never again (§1.5, §2.8).
+
+## 3.11 Part 3 — open for Adil
+
+1. **Request body size cap** — 1 MB? (§3.2)
+2. **How far in the future is too far** for a `boxStart` — 24 hours? (§3.7)
+3. **Rate limit per device** — generous, or a specific number? (§3.8)
+
+All three are numbers, not shapes. None of them changes the schema, and all can be tuned after
+the daemon has run for real — which, given ADR 0003, is exactly when we will first learn what
+the right values are.
+

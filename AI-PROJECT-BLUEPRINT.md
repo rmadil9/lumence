@@ -1,12 +1,3 @@
-# Project Kickoff Blueprint — paste into a fresh session
-
-> Copy everything below the line into a new Claude Code session at the start of a project.
-> Fill every `<<< ... >>>` block first. Delete sections that genuinely don't apply.
-> Anything you leave as `<<< UNKNOWN >>>` is a signal for the assistant to interrogate you, not to guess.
-
----
-
-
 
 ## 1. MY GOAL FOR THIS PROJECT — do not skip
 
@@ -149,7 +140,6 @@ For every slice thereafter, run this loop and don't skip steps:
 2. **Design check** — you flag any contract or architecture impact. If yes → ADR first.
 3. **Tests first** where it's cheap: acceptance criteria become test names before implementation.
 4. **Implement** — smallest change that satisfies the spec. Explain the *why* as you go (§1).
-5. **Self-review** — you re-read your own diff hostilely before showing me.
 6. **My review** — I read every line. Ask me the comprehension question here.
 7. **Independent code review** — fresh context, adversarial: correctness, edge cases, security, simplification.
 8. **Integrate + deploy** — merged, deployed, smoke-tested on the real URL.
