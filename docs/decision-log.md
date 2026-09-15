@@ -380,12 +380,12 @@ point of this document.
 
 ---
 
-### ADR 0016 — Split into a Next.js BFF and a separate FastAPI backend
+### ADR 0016 — Split into a Next.js front-end and a separate FastAPI backend
 - **Decided by:** Adil · 2026-09-15 · supersedes ADR 0008's "one application, not two". The rest
   of ADR 0008 — Postgres, Prisma, Better Auth, Docker Compose, nginx — stands.
-- **Choice:** two deployed services. **Next.js BFF** holds rendering, sign-in state and shaping
+- **Choice:** two deployed services. **Next.js front-end** holds rendering, sign-in state and shaping
   data for the screen. **FastAPI backend** holds the business rules, the domain logic and the
-  only connection to Postgres. A **BFF** is a thin server that exists to serve one user
+  only connection to Postgres. A **front-end** is a thin server that exists to serve one user
   interface; it is not where product rules live.
 - **Rejected:** keeping one application (teaches nothing about service boundaries); a Node
   backend (one language everywhere, but then it is unclear why the two halves are separate
@@ -398,11 +398,11 @@ point of this document.
   written twice in two languages, with nothing to catch drift; an extra network hop on every
   request.
 - **The sharpest new risk:** spec A7 — a user seeing only their own data — now has to hold across
-  two services. The backend must not trust a user identifier from the BFF unless that is a
+  two services. The backend must not trust a user identifier from the front-end unless that is a
   deliberate, documented decision.
-- **The standard failure to watch for:** the BFF quietly accumulating business logic. The rule —
+- **The standard failure to watch for:** the front-end quietly accumulating business logic. The rule —
   **if it is a rule about the product, it belongs in the backend.**
-- **Still open, and Adil's to decide:** how the BFF authenticates to the backend (an auth rule,
+- **Still open, and Adil's to decide:** how the front-end authenticates to the backend (an auth rule,
   on the veto list); whether to generate the TypeScript side from the backend's schema to stop
   drift.
 - **Consequence for the docs:** `04-contracts.md` is signed off and must be revised — **Adil
@@ -413,34 +413,50 @@ point of this document.
 
 ---
 
-### ADR 0017 — BFF-to-backend authentication: service credential **and** forwarded user token
+### ADR 0017 — front-end-to-backend authentication: forwarded user token (amended same day)
 - **Decided by:** Adil · 2026-09-15 · auth rule, on the veto list. Closes the question ADR 0016
   left open.
-- **The insight:** two separate questions hide in one. *Is this request from our BFF?* and *which
+- **The insight:** two separate questions hide in one. *Is this request from our front-end?* and *which
   user is it for?* They have different failure modes, so one credential cannot answer both well.
-- **Choice:** every BFF-to-backend request carries **both** — a service credential proving the
-  caller is our BFF, and **the user's token forwarded unchanged**, which the backend verifies
-  itself.
+- **Choice, as amended:** every front-end-to-backend request carries **the user's token,
+  forwarded unchanged**, which the backend verifies itself. The service credential originally
+  required was **dropped the same day** — see below.
 - **The rule that follows:** the backend **never** reads a user identifier from a body, a query
-  parameter, or a header the BFF filled in. Identity comes only from the token it verified. **A
-  BFF bug therefore cannot leak another user's data, because the BFF is never asked who the user
+  parameter, or a header the front-end filled in. Identity comes only from the token it verified. **A
+  front-end bug therefore cannot leak another user's data, because the front-end is never asked who the user
   is.**
-- **Rejected — service credential alone:** the backend would trust the BFF's claim about
-  identity, so one mistake in the BFF (a user id read from a query parameter instead of the
+- **Rejected — service credential alone:** the backend would trust the front-end's claim about
+  identity, so one mistake in the front-end (a user id read from a query parameter instead of the
   verified session) becomes a **complete authorization bypass**. Exactly the risk ADR 0016 named.
 - **Rejected — forwarded token alone:** safe on identity, but says nothing about whether the
-  caller is our BFF at all.
-- **Also taken, free:** tokens are signed with an **asymmetric key** — the BFF holds the private
+  caller is our front-end at all.
+- **Amendment, same day — Adil challenged the service credential and was right.** The backend is
+  not reachable from the internet: nginx routes the browser to the front-end and the daemon's
+  ingest path to the backend, and nothing else. Every other backend route lives only on the
+  private network. **The service credential was defending a door that is not open.**
+- **What that gives up, knowingly:** network isolation is now the *only* protection for the
+  backend, so **the nginx configuration becomes security-critical** — one wrong route later and
+  it is public with no second line of defence. And nothing stops something else compromised on
+  the VPS reaching the backend sideways. Judged a fair trade for one host with six containers.
+- **One category left closed:** Adil also proposed non-user requests carrying no credential.
+  There are effectively none in this product — everything is behind sign-in — so only the health
+  check qualifies, and that is fine unauthenticated. A standing exemption was not created.
+- **Also taken, free:** tokens are signed with an **asymmetric key** — the front-end holds the private
   key and signs, the backend holds only the public key and can verify. The backend can confirm a
   token is genuine **without being able to create one**, so a compromised backend cannot forge a
   login.
-- **Cost accepted:** two credentials to manage where one application needed none; both checks on
-  every endpoint, which must live in one shared place rather than be copied per route — repeated
-  authorization code is where mistakes happen.
+- **Cost accepted:** one credential to manage where a single application needed none; the token
+  check on every endpoint, which must live in one shared place rather than be copied per route —
+  repeated authorization code is where mistakes happen.
 - **Unchanged:** the daemon's ingest endpoint keeps its own device token and does not pass
-  through the BFF.
-- **Still open:** where the key pair is generated and stored, and how it is rotated. Rotating it
-  signs everyone out at once — the only global revocation this design has (ADR 0014).
+  through the front-end.
+- **Key pair, decided 2026-09-15:** generated once at setup. **Private key in the front-end's
+  environment, public key in the backend's.** Rotation is manual and rare — it signs everyone out
+  at once, and is the only global revocation this design has (ADR 0014).
+- **The two services are versioned and deployed separately** (Adil, 2026-09-15). **Consequence:**
+  a new front-end will sometimes run against an old backend and vice versa, so **the contract
+  between them must stay backward-compatible** — add fields, never remove or repurpose them. A
+  breaking change means a new path kept alongside the old one.
 
 ---
 

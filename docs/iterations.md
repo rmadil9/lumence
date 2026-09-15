@@ -28,8 +28,8 @@ Everything else is known work.
 ## Backlog
 
 ### 0 — Walking skeleton
-Browser → BFF → FastAPI → Postgres → back out → deployed HTTPS URL → CI green. Nothing else.
-- Docker Compose: nginx, BFF, backend, postgres · Certbot issuing a real certificate
+Browser → front-end → FastAPI → Postgres → back out → deployed HTTPS URL → CI green. Nothing else.
+- Docker Compose: nginx, front-end, backend, postgres · Certbot issuing a real certificate
 - **Proves the service boundary works before anything depends on it** ([ADR 0016](adr/0016-split-into-nextjs-bff-and-fastapi-backend.md))
 - One trivial page reading one row
 - Restart-on-reboot proven by actually rebooting

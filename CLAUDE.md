@@ -11,7 +11,7 @@ verifiable rather than an honour system. Treat it as core, not as an accessory.
 
 ## Status
 **Understanding phase reopened 2026-09-15.** [ADR 0016](docs/adr/0016-split-into-nextjs-bff-and-fastapi-backend.md)
-splits the app into a Next.js BFF plus a FastAPI backend, which reverses ADR 0008's "one app".
+splits the app into a Next.js front-end plus a FastAPI backend, which reverses ADR 0008's "one app".
 **Three spine steps need work:** step 4 contracts (two boundaries now, **Adil drives**), step 5
 UX/UI (never done), step 6 architecture (redraw). No product code yet. Stack is chosen ([ADR 0008](docs/adr/0008-stack-single-nextjs-app-on-docker.md))
 activity capture is designed ([ADR 0009](docs/adr/0009-activity-capture-fixed-window-samples.md)),
@@ -26,11 +26,11 @@ tracking is cut ([ADR 0004](docs/adr/0004-drop-per-todo-time-tracking.md)).
 
 | Layer | Choice |
 |---|---|
-| Front end / BFF | Next.js — rendering, sign-in state, shaping data for the screen ([ADR 0016](docs/adr/0016-split-into-nextjs-bff-and-fastapi-backend.md)) |
+| Front end / front-end | Next.js — rendering, sign-in state, shaping data for the screen ([ADR 0016](docs/adr/0016-split-into-nextjs-bff-and-fastapi-backend.md)) |
 | Backend | **FastAPI (Python)** — business rules, domain logic, the only thing that touches Postgres |
-| BFF → backend auth | Service credential **+** forwarded user token, verified by the backend itself — [ADR 0017](docs/adr/0017-bff-to-backend-authentication.md). Asymmetric signing keys |
+| front-end → backend auth | **Forwarded user token**, verified by the backend itself — [ADR 0017](docs/adr/0017-bff-to-backend-authentication.md). Asymmetric keys: private in front-end, public in backend. No service credential — the backend is not internet-reachable, so **nginx routing is security-critical** |
 | Database | PostgreSQL |
-| ORM + migrations | Prisma |
+| ORM + migrations | **SQLAlchemy + Alembic** (Python) — Prisma dropped, it is a TypeScript tool and the database now belongs to the backend |
 | Auth | Better Auth, self-hosted. **Stateless JWT sign-in, not database sessions** — [ADR 0014](docs/adr/0014-jwt-sessions-instead-of-database-sessions.md). **15-day token lifetime** |
 | Deployment | Docker Compose |
 | Reverse proxy + TLS | nginx + Certbot |
@@ -91,7 +91,7 @@ In short: answer in points, plain words, keep it short, and commit without askin
 | [02-spec.md](docs/02-spec.md) | v1 behaviours in and explicitly out |
 | [03-domain.md](docs/03-domain.md) | Entities, lifecycle states, invariants, ubiquitous language — **signed off 2026-09-02** |
 | [04-contracts.md](docs/04-contracts.md) | Data schema + API surface + tracker ingest — **SIGNED OFF 2026-09-11. The lock-in point — changes need an ADR** |
-| [05-architecture.md](docs/05-architecture.md) | Component boundaries, deployment topology |
+| [05-architecture.md](docs/05-architecture.md) | **The HLD** — components, boundaries, deployment topology. Redrawn 2026-09-15 for two services |
 | [adr/](docs/adr/) | One irreversible decision each |
 | [iterations.md](docs/iterations.md) | Risk-ordered delivery backlog + retro lines |
 | [test-strategy.md](docs/test-strategy.md) | What is unit/integration/e2e, what we skip |
