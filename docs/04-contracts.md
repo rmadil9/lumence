@@ -1,7 +1,7 @@
 # 04 — Contracts (data schema + API surface)
 
-> Status: **draft, part 1 of 3.** This is the **LOCK-IN POINT**. Once signed off, nothing here
-> changes without an ADR (`CLAUDE.md`, human veto list).
+> Status: **SIGNED OFF 2026-09-11.** This is the **LOCK-IN POINT**. Nothing here changes now
+> without an ADR (`CLAUDE.md`, human veto list).
 >
 > Written 2026-09-03 against the signed-off `02-spec.md` and `03-domain.md`. Every table and
 > column traces to a spec line, a domain invariant, or an ADR. Unknowns are `TODO(adil):`.
@@ -210,7 +210,8 @@ table in this schema is tiny by comparison.
 | `application` | text | not null. The focused application, or `"Desktop"` for the bare desktop |
 | `domain` | text | **nullable, and null is normal** — see below |
 | `idle_seconds` | integer | not null. Seconds since the last keyboard or mouse input |
-| `screen_locked` | boolean | not null |
+| `screen_locked` | boolean | not null. Locked means awake but absent — **not** asleep, which produces no rows at all |
+| `idle_inhibited` | boolean | not null. Whether an application is asking the desktop to stay awake ([ADR 0015](adr/0015-idle-inhibitor-distinguishes-watching-from-away.md)) |
 | `received_at` | timestamptz | not null. When the server got it — for diagnosis only |
 
 **Primary key: `(device_id, box_start)`.** This is the single most important line in the
@@ -240,8 +241,13 @@ stays null and the day view's domain panel is empty. Nothing migrates.
   `box_start` shows skew. Nothing in the product reads it, and no rule ever depends on it — a
   sample is filed by the time inside it, never by arrival (invariant 20).
 - **No column says whether a sample is idle.** That is a rule, not a fact, and rules are applied
-  when the day view is read (invariant 22, ADR 0009). Reading B (invariant 22a) needs
-  `idle_seconds` and `screen_locked` and nothing more.
+  when the day view is read (invariant 22, ADR 0009). The rule needs `idle_seconds`,
+  `screen_locked` and `idle_inhibited`, and nothing more.
+- **`idle_inhibited` is what separates watching from being away.** Without it, a person absent
+  with a blanked screen, a person absent with a lit screen, and a person watching a film all
+  produce identical data — a run of samples with a climbing `idle_seconds`
+  ([ADR 0015](adr/0015-idle-inhibitor-distinguishes-watching-from-away.md)). The blanking itself
+  is deliberately **not** used: its timeout varies by machine, by user and by power source.
 
 **Growth.** ~0.9M rows per user per year. Trivial for Postgres to store; the thing that matters
 is that the day view **aggregates in the database** and never fetches rows into the app.
@@ -418,10 +424,17 @@ Covers spec A1–A6. Two configuration facts this contract depends on:
   day before the daemon was installed.
 - **All totals are aggregated in Postgres.** The app never pulls 2,400 rows a day into memory to
   add them up.
-- **The five-minute idle rule is applied here, and only here** (ADR 0009, invariant 22). Reading
-  B (invariant 22a): consecutive no-input samples are grouped into stretches, and **any stretch
-  that reached five minutes is dropped whole** — including its first five minutes. A stretch in
-  which the screen became locked is dropped whole as well.
+- **The idle rule is applied here, and only here** (ADR 0009, invariant 22). Four rules, in
+  order ([ADR 0015](adr/0015-idle-inhibitor-distinguishes-watching-from-away.md)):
+  1. **Screen locked → discard.** Unambiguous absence; no five-minute wait.
+  2. **`idle_seconds` < 300 → count.**
+  3. **`idle_seconds` ≥ 300 **and** `idle_inhibited` → count.** An application is holding the
+     screen awake, which is evidence of watching rather than absence.
+  4. **`idle_seconds` ≥ 300, no inhibitor → discard.**
+- **Reading B governs rules 2 and 4** (invariant 22a): the decision is made about a **stretch**
+  of consecutive no-input samples, not about each sample alone. A gap counts under rule 2 only if
+  the stretch **ends** before five minutes; a stretch that reaches five minutes is dropped whole,
+  including its opening five minutes. Rule 3 exempts a stretch from that entirely.
 - **Idle time is never returned as a category** (D5). It is subtracted and never named. The
   totals will therefore be less than the wall-clock day, and that gap is deliberate.
 - **`domain` totals come only from samples that have one.** With no browser extension every
@@ -516,7 +529,8 @@ Content-Type: application/json
       "application": "Code",
       "domain": null,
       "idleSeconds": 3,
-      "screenLocked": false
+      "screenLocked": false,
+      "idleInhibited": false
     }
   ]
 }
@@ -530,13 +544,15 @@ Content-Type: application/json
 | `application` | Required, non-empty. `"Desktop"` for the bare desktop with nothing open (ADR 0009) |
 | `domain` | Optional, and **null is the normal case** — present only when the focused application is a browser and the extension is installed |
 | `idleSeconds` | Required, zero or greater. Seconds since the last keyboard or mouse input |
-| `screenLocked` | Required boolean |
+| `screenLocked` | Required boolean. The machine is awake with the screen locked. A **sleeping** machine sends nothing at all |
+| `idleInhibited` | Required boolean. An application is asking the desktop to stay awake — the signal that separates watching from being away (ADR 0015) |
 
 - **500 is the batch ceiling** so that replaying a long backlog never becomes one enormous
   request that times out halfway (ADR 0009).
-- **Request bodies are capped** — **TODO(adil):** at what size. 500 samples is on the order of
-  100 KB; a 1 MB cap leaves generous headroom and stops a malformed client from sending
-  something absurd.
+- **Request bodies are capped at 1 MB** (Adil, 2026-09-11). A full 500-sample batch is on the
+  order of 100 KB, so this is roughly ten times more than real traffic ever needs — it never
+  rejects a legitimate upload, and it stops a buggy or hostile client sending something large
+  enough to exhaust the server's memory.
 - **Ordering between batches is not required.** Each sample carries its own `boxStart`, so a
   batch about yesterday may arrive after a batch about today with no ill effect.
 
@@ -613,19 +629,25 @@ The laptop's clock can be wrong. Nothing here tries to correct it.
   hours it actually happened.
 - **Skew is recorded and returned** (§3.4), so a broken clock shows up in logs instead of
   silently producing a wrong day.
-- **Samples timestamped far in the future are rejected**, as a sanity guard against a badly wrong
-  clock. **TODO(adil): how far is far.** My reading: reject beyond about 24 hours ahead. Tighter
-  than that risks discarding real data from a mildly wrong clock; looser lets nonsense in. Old
-  timestamps are **always** accepted, however old — that is the backlog case, and it is normal.
+- **Samples timestamped more than 4 hours in the future are rejected** (Adil, 2026-09-11), as a
+  sanity guard against a badly wrong laptop clock. The check is one comparison against the
+  server's own clock — `boxStart > now + 4 hours` — and the server trusts **its** clock, never
+  the client's, because the VPS syncs time automatically and a laptop may not.
+- **Old timestamps are always accepted, however old.** That is the backlog case, and it is
+  normal — a laptop offline for three days uploads three days of history.
+- **`clockSkewSeconds` is a separate, purely diagnostic check.** It compares `clientSentAt`
+  against the server's clock and never rejects anything. One check refuses the future; the other
+  only warns about drift.
 
 ## 3.8 Rate limiting
 
 - Normal operation is **one request per device roughly every 60 seconds** (ADR 0009).
 - Backlog replay is faster and legitimately so: a six-hour backlog is about 1,440 samples, which
   is three batches, sent back to back.
-- **TODO(adil): the limit.** My reading: generous per device — a few requests per second, enough
-  that a replay never trips it — and rely on the token, not the rate limit, as the real defence.
-  The device is authenticated; it is not an anonymous endpoint.
+- **The limit is a few requests per second per device** (Adil, 2026-09-11) — generous enough that
+  a backlog replay never trips it, tight enough to catch a daemon bug that puts the upload loop
+  into a tight spin. The real defence is the device token; this endpoint is authenticated, not
+  anonymous, so the rate limit is guarding against our own bugs rather than against strangers.
 
 ## 3.9 Versioning — the daemon updates on a different schedule from the server
 
@@ -657,13 +679,27 @@ Stated plainly because each one is a rule that a future change could quietly bre
 6. **Never returns a plain device token.** Only the hash is stored; the token is shown once at
    registration and never again (§1.5, §2.8).
 
-## 3.11 Part 3 — open for Adil
+## 3.11 Part 3 — resolved
 
-1. **Request body size cap** — 1 MB? (§3.2)
-2. **How far in the future is too far** for a `boxStart` — 24 hours? (§3.7)
-3. **Rate limit per device** — generous, or a specific number? (§3.8)
+All three closed on 2026-09-11: **1 MB** body cap · **4 hours** as the future-timestamp limit ·
+**a few requests per second** per device.
 
-All three are numbers, not shapes. None of them changes the schema, and all can be tuned after
-the daemon has run for real — which, given ADR 0003, is exactly when we will first learn what
-the right values are.
+All three are numbers, not shapes. None changes the schema, and all can be tuned once the daemon
+has run for real — which, given [ADR 0003](adr/0003-no-spike-phase.md), is the first time we will
+actually know the right values.
+
+---
+
+# Sign-off
+
+**`04-contracts.md` is signed off by Adil on 2026-09-11.**
+
+The data model, the API surface and the tracker ingest contract are now frozen. Changing any of
+them requires an ADR — this is the line `CLAUDE.md` draws on the human veto list, and it exists
+because a schema is cheap to edit today and expensive to migrate once it holds real data.
+
+Three things were locked here before a capture client has ever run against them, which
+[ADR 0003](adr/0003-no-spike-phase.md) named as the cost of skipping the spike: the 15-second
+box grid, the `(device_id, box_start)` key, and the batch-and-retry protocol. If the daemon turns
+out to need something different, that is an ADR and a migration, not a quiet edit.
 

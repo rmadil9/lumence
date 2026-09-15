@@ -34,7 +34,7 @@ the architecture phase and gets its own ADR.
 - **Google OAuth adds a third-party integration** — client registration, redirect URIs,
   and the account-linking question when the same email arrives by both routes. Spec line A6
   requires it to resolve to one account.
-- **Auth is now a meaningful slice, not a formality**, and it competes for days with
+- **Auth is now a meaningful iteration, not a formality**, and it competes for days with
   activity capture, which is the riskier work.
 - **Ladder rung 2 gets more expensive.** Descending it now means abandoning more built work
   than it would have.

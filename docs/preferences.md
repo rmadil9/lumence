@@ -33,7 +33,7 @@ default, this file wins.
 
 - Teach me the **name** of the concept, not just the fix.
 - Every concept I meet goes in `learning-log.md`, one line.
-- One comprehension question at the end of each slice.
+- One comprehension question at the end of each iteration.
 
 ## Still to fill in
 

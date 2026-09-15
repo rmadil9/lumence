@@ -161,7 +161,7 @@ otherwise burn. It costs one extra D-Bus read per sample.
   threshold, and thirty-five minutes of genuinely engaged time is discarded. The real fix is
   to ask the system whether an application is actively preventing the screen from sleeping —
   which video players do — and treat that as active. Decided by Adil on 2026-08-29 to log it
-  rather than build it, because it competes with the riskiest slice in the project. **This
+  rather than build it, because it competes with the riskiest iteration in the project. **This
   wants a `LOG` line in the edge-case table of `02-spec.md`, which is signed off — flagged
   for Adil, not added.**
 - **Storage grows steadily** — ~2,400 rows per user per ten-hour day, roughly 0.9M rows a

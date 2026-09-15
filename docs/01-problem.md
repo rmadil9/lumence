@@ -28,7 +28,7 @@ the product: **whole-day activity tracking is what gives the lock-in timer meani
 focus timer on its own is a stopwatch plus an honour system, and a dozen apps ship one. A
 focus timer whose claim can be checked against where the attention actually went is a
 different product. The tracker is the spine of the idea, not an accessory to it — which is
-why it is sliced first (`00-process.md`).
+why it is built first (`00-process.md`).
 
 Since per-todo time tracking was cut ([ADR 0004](adr/0004-drop-per-todo-time-tracking.md)),
 the lock-in session is the **only** thing in v1 that ties a stated intention to measured
@@ -65,8 +65,10 @@ Made measurable — v1 succeeds if, by day 20:
 4. A database backup has been taken **and restored** — the restore actually performed, not
    just scripted.
 5. A rollback has been executed once in practice, by Adil, before it is ever needed.
-6. Structured logs with request IDs exist, health checks pass, every endpoint has
-   authorisation, and at least one alert would actually wake him.
+6. Structured logs with request IDs exist, health checks pass, and every endpoint has
+   authorisation. ~~At least one alert would actually wake him.~~ **The alert requirement was
+   dropped by Adil on 2026-09-11** — accepted consequence: the site going down is noticed the
+   next time he opens it, not sooner.
 
 **7. The post-launch gate:** Adil uses Lumence for seven consecutive days without falling
 back to LibreOffice, the Google timer, or ChatGPT-by-copy-paste.
@@ -78,7 +80,7 @@ sign-off at day 20.
 
 ## Non-goals for v1
 
-Explicitly out, and not to be reopened mid-slice:
+Explicitly out, and not to be reopened mid-iteration:
 
 - **Revenue and subscription plans.** No billing, no payment processing, no pricing page,
   no plan tiers. Subscriptions are a v2 concern and will use **Paddle** when they arrive.

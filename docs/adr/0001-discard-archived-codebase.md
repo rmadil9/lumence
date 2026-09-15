@@ -31,8 +31,12 @@ Lumence and are not cited in Lumence's documents.
 - One judgement from it is adopted **independently, on its own merits** — not inherited:
   defer any integration gated by a third party's approval or paid tier behind a clean seam.
 - **Security consequence:** `backend/.env` is committed at `012ab423` and pushed to
-  `origin`. Discarding the code does not unleak those credentials. Any keys in that file
-  must be treated as public and rotated. Open action for Adil.
+  `origin`. Discarding the code does not remove it — deleting a file from git does not delete
+  it from history, so it is still readable at that commit.
+  **Severity revised 2026-09-11 (Adil): the repository is private.** Only people with repository
+  access have ever been able to read it, so the keys are not public. Rotation is good hygiene
+  rather than an emergency, and it stops being optional the moment the repository is made public
+  or shared.
 
 ## What would make us revisit
 Nothing. The decision is already executed; this ADR exists so the reason survives.

@@ -120,7 +120,10 @@ Each one records:
   installed — **optional, and empty is normal** (this is the seam that keeps contingency
   ladder rung 1 cheap),
 - **seconds since the last keyboard or mouse input**,
-- **whether the screen was locked**.
+- **whether the screen was locked** — awake but absent, which is not the same as asleep,
+- **whether an application was asking the desktop to stay awake** — the signal that separates
+  watching something from having walked away
+  ([ADR 0015](adr/0015-idle-inhibitor-distinguishes-watching-from-away.md)).
 
 It records **facts only**. No rule has been applied to it — in particular the five-minute
 idle rule is applied when the day view is read, never when the sample is written (ADR 0009).
@@ -261,9 +264,13 @@ has already passed.
     minutes, **the entire stretch is discarded — including its first five minutes.** Walking
     away for thirty minutes contributes zero, not five minutes. A stretch that ends before
     five minutes counts in full.
-22b. **My reading, correctable:** a stretch during which the screen becomes **locked** is
-    discarded in full as well, however short it was — a locked screen is unambiguous absence
-    (ADR 0009). Nothing in the spec states this directly; it follows from 22a's spirit.
+22b. **A locked screen is discarded immediately**, however short the stretch — locking is
+    unambiguous absence and needs no waiting period (ADR 0009).
+22c. **A stretch during which an application held the desktop awake is counted in full**, however
+    long, and is exempt from 22a (ADR 0015). That inhibitor is the evidence separating a person
+    watching something from a person who has left. Without it, both look identical in the data.
+22d. **A locked machine still produces samples; a sleeping one produces none.** Locked means
+    awake and absent. Asleep means no data exists at all (E13). The two are never conflated.
 
 **Time**
 23. **All timestamps are stored in UTC.** Days are worked out in **one fixed timezone** —

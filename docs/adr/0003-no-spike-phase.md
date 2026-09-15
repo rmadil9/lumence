@@ -15,27 +15,27 @@ around a known answer.
 ## Options considered
 1. **Spike first, then linear.** One day spent up front to retire the largest unknown before
    any design depends on it. Rejected by Adil as too slow for a fast-moving project.
-2. **Linear, with activity capture ordered first among the slices.** The unknown is carried
+2. **Linear, with activity capture ordered first among the iterations.** The unknown is carried
    into the build and resolved by building the real thing. Chosen.
 3. **Linear, activity capture last.** Rejected by both of us — it puts the biggest surprise
    where there is no time left to absorb it.
 
 ## Decision
 No spike phase. Straight linear execution: one understanding pass, then risk-ordered
-slices, with activity capture designed early in `05-architecture.md` and sliced early.
+iterations, with activity capture designed early in `05-architecture.md` and built early.
 
 ## Consequences
 - **Saves one day up front.** That is the whole point and it is a real gain on a 20-day
   budget.
 - **The cost of activity capture is discovered while building production code, not throwaway
-  code.** If the approach turns out to be wrong, the loss is a partly-built slice plus the
+  code.** If the approach turns out to be wrong, the loss is a partly-built iteration plus the
   design decisions that assumed it, rather than one deliberately disposable day.
 - Contracts are the risk here specifically: `04-contracts.md` locks the ingest surface
   before we have run a capture client against it. If capture turns out to work differently
   than assumed, the contract changes after lock-in — which the veto list flags as a
   decision needing an ADR.
 - **Mitigations, which are now load-bearing rather than nice-to-have:**
-  - The descending-risk rule — activity capture is sliced early, not late.
+  - The descending-risk rule — activity capture is built early, not late.
   - The day 4 / 9 / 14 checkpoints — the only early-warning system left.
   - The contingency ladder — rung 1 drops browser tabs, which is the more speculative half.
 - I advised for the spike once and was overruled. Recorded here so the reasoning survives if

@@ -140,8 +140,14 @@ post history, any other platform.
 | D6 | One day at a time | The view covers a single day. No weekly, monthly, or trend views |
 
 **Notes on idle — the rule in full**
+> Extended 2026-09-14 by [ADR 0015](adr/0015-idle-inhibitor-distinguishes-watching-from-away.md),
+> which adds the watching case below. The rest of this note is unchanged.
+
 - Device in use → time counts against the app in the foreground.
 - Device on, user away past the 5-minute threshold → that time is **discarded**.
+- **Device on, no input, but an application is holding the screen awake → that time counts.**
+  This is the watching-a-video case, and it was previously discarded.
+- **Screen locked → discarded immediately**, with no threshold to wait out.
 - Device asleep or shut down → there is no data at all.
 - Daily totals will therefore be **less than the wall-clock day**. That gap is away time and
   is intentionally never displayed.

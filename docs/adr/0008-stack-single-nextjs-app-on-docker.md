@@ -81,7 +81,7 @@ extension has no other option. Detail belongs to the activity-capture ADR, not h
 | Web application | One Next.js app — user interface and server code in one TypeScript project |
 | Database | PostgreSQL |
 | ORM and migrations | Prisma |
-| Authentication | Better Auth, self-hosted, tables in our own Postgres |
+| Authentication | Better Auth, self-hosted, tables in our own Postgres. **Session storage superseded by [ADR 0014](0014-jwt-sessions-instead-of-database-sessions.md) — sign-in state is a stateless JWT, not a database session** |
 | Deployment | Docker Compose |
 | Reverse proxy and TLS | nginx, with Certbot for certificate issue and renewal |
 | Laptop capture client | Python |
@@ -98,7 +98,7 @@ extension has no other option. Detail belongs to the activity-capture ADR, not h
 - **Prisma means less SQL written by hand**, which was the point, and less SQL learned,
   which was the cost. Escape-hatch raw queries are expected for the day view.
 - **Better Auth keeps authentication off the critical path.** ADR 0005 made auth a real
-  slice competing with the riskier work; this reduces it to configuration plus a Google
+  iteration competing with the riskier work; this reduces it to configuration plus a Google
   client registration.
 - **A background-job home is still open.** Spec T4 — todos flipping to `delayed` at the day
   boundary whether or not the app is open — needs something that runs on a schedule.

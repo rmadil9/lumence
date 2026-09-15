@@ -12,7 +12,7 @@ I want two outputs, weighted equally:
 - When I ask you to do something architecturally wrong, **say so once, clearly**, then follow my decision and log it as an ADR with my name on it.
 - Prefer teaching me the **name of the concept** (idempotency key, optimistic locking, N+1 query, circuit breaker, bounded context) over silently applying it. Use the correct terminology and define it inline the first time.
 - Maintain `docs/learning-log.md`: every time I hit a concept I didn't know, add one line — concept, where it bit me, one-sentence definition.
-- At the end of each slice, ask me **one comprehension question** about the code you just wrote. If I can't answer it, we walk through it before moving on.
+- At the end of each iteration, ask me **one comprehension question** about the code you just wrote. If I can't answer it, we walk through it before moving on.
 
 ---
 
@@ -51,7 +51,7 @@ Interview me until you can name my **dominant risk**, then route:
 |---|---|---|
 | **Requirement uncertainty** — I don't know exactly what to build | Iterative / prototype-first | Walking skeleton + clickable prototype → show a real user → learn → re-spec. Defer architecture. |
 | **Technology uncertainty** — I don't know if it's buildable | Spiral / spike-first | Time-boxed throwaway spikes on the scary part *first*. Answer the question, delete the code, then design. |
-| **Requirements + tech both known** | Linear-ish (waterfall-lite) | Do the full understanding pass once, slice it, execute. Efficient and legitimate here. |
+| **Requirements + tech both known** | Linear-ish (waterfall-lite) | Do the full understanding pass once, break it into iterations, execute. Efficient and legitimate here. |
 | **Value uncertainty** — I don't know if anyone wants it | Lean MVP | Thinnest end-to-end path to a real user, instrumented for feedback. Explicitly under-engineer. |
 
 **Deliverable of Phase 0:** one paragraph naming my dominant risk, the chosen model, how many iterations we expect, and what evidence would make us switch models. Put it at the top of `docs/01-problem.md`.
@@ -70,13 +70,13 @@ The process model chosen above decides *how many times* and *how deeply* we go a
 4. **Contracts** — data schema + API surface (lock-in point)
 5. **UX/UI** — flows first, screens as a consequence
 6. **Architectural decisions** — boundaries, topology, the irreversible picks
-7. **Slices** — vertical, end-to-end, risk-ordered backlog
-8. **Deploy path** — built at slice 0, never at the end
-9. **Testing loop per slice**
+7. **Iterations** — vertical, end-to-end, risk-ordered backlog
+8. **Deploy path** — built at iteration 0, never at the end
+9. **Testing loop per iteration**
 10. **Hardening** — observability, error handling, auth, rate limits, data safety
 11. **Maintain / evolve**
 
-Steps 1–6 = understanding. 7–11 = delivery. **Time-box 1–6 to `<<< N days >>>`.** Unresolved ambiguity becomes a question in `slices.md`, not a blocker.
+Steps 1–6 = understanding. 7–11 = delivery. **Time-box 1–6 to `<<< N days >>>`.** Unresolved ambiguity becomes a question in `iterations.md`, not a blocker.
 
 ---
 
@@ -88,7 +88,7 @@ I wear five hats. **Never let me wear two at once.** At the start of each sessio
 |---|---|---|
 | **Product manager** | Problem, scope, non-goals, priority, acceptance criteria | Touching code |
 | **Architect** | Boundaries, stack, contracts, ADRs, tradeoffs | Implementation detail |
-| **Coder** | Executing the current slice to spec | Renegotiating scope mid-slice — park doubts in a list |
+| **Coder** | Executing the current iteration to spec | Renegotiating scope mid-iteration — park doubts in a list |
 | **QA** | Adversarial testing, edge cases, regressions | Being kind to the coder. Best in a *fresh session with no build context* |
 | **Operator** | Deploy, rollback, logs, alerts, incidents | Feature work |
 | **Growth manager** | Post-launch: onboarding, activation, analytics, feedback loop, iteration | Pre-launch scope creep |
@@ -113,7 +113,7 @@ docs/
   04-contracts.md      # data schema + API surface — the lock-in point
   05-architecture.md   # component boundaries, runtime/deployment topology
   adr/0001-*.md        # one irreversible decision each: context, options rejected, why
-  slices.md            # ordered delivery backlog, risk-sequenced, WIP = 1
+  iterations.md            # ordered delivery backlog, risk-sequenced, WIP = 1
   test-strategy.md     # what is unit/integration/e2e, what we deliberately don't test
   runbook.md           # deploy, rollback, where logs/metrics live, what to do at 2am
   learning-log.md      # concepts I met and what they mean — my proof I'm not vibe coding
@@ -128,13 +128,13 @@ CLAUDE.md              # agent context: conventions, commands, index of the abov
 
 ---
 
-## 7. SLICE EXECUTION LOOP — spec-driven, one slice at a time
+## 7. ITERATION EXECUTION LOOP — spec-driven, one iteration at a time
 
-A **slice** = a vertical cut through every layer delivering one small user-visible capability, deployed. Not a layer. Not a module.
+An **iteration** = a vertical cut through every layer delivering one small user-visible capability, deployed. Not a layer. Not a module.
 
-**Slice 0 is always the walking skeleton:** the most trivial end-to-end path — request → logic → DB → response → UI → deployed URL → CI green. Nothing else. It retires integration risk before it accumulates.
+**Iteration 0 is always the walking skeleton:** the most trivial end-to-end path — request → logic → DB → response → UI → deployed URL → CI green. Nothing else. It retires integration risk before it accumulates.
 
-For every slice thereafter, run this loop and don't skip steps:
+For every iteration thereafter, run this loop and don't skip steps:
 
 1. **Spec** — I approve a short written spec: behaviour, acceptance criteria, edge cases, out-of-scope. No spec, no code.
 2. **Design check** — you flag any contract or architecture impact. If yes → ADR first.
@@ -144,9 +144,9 @@ For every slice thereafter, run this loop and don't skip steps:
 7. **Independent code review** — fresh context, adversarial: correctness, edge cases, security, simplification.
 8. **Integrate + deploy** — merged, deployed, smoke-tested on the real URL.
 9. **Update docs** — spec, ADRs, CLAUDE.md, learning-log.
-10. **Retro line** — one line in `slices.md`: what surprised us.
+10. **Retro line** — one line in `iterations.md`: what surprised us.
 
-**WIP = 1.** No parallel slices. Estimate in slices, never hours.
+**WIP = 1.** No parallel iterations. Estimate in iterations, never hours.
 
 ### Agent-driven development — where to parallelise
 Use subagents for genuinely independent, read-heavy or verifiable work: codebase exploration, multi-angle code review, test generation across modules, research spikes, doc drafting. Use isolated worktrees when agents would edit the same files. **Do not** parallelise architecture, contract design, or anything on the veto list — those are sequential and mine.
@@ -155,13 +155,13 @@ Use subagents for genuinely independent, read-heavy or verifiable work: codebase
 
 ## 8. QUALITY — the parts that separate a product from a demo
 
-Do not treat these as a final phase. Each one has a trigger inside the slice loop.
+Do not treat these as a final phase. Each one has a trigger inside the iteration loop.
 
 - **Edge cases** — at spec time, force the list: empty, one, many; concurrent; duplicate submit; partial failure; expired/revoked; unicode; timezone; permission-denied; network mid-flight. I decide which are in scope for v1; the rest get logged, not silently ignored.
 - **Debugging** — you generate hypotheses; **I do the root-cause reasoning.** Rule: reproduce → isolate → hypothesise → prove → fix → add the regression test. Never fix a symptom without naming the cause.
 - **Integration** — every external boundary (DB, third-party API, auth provider, queue, payment) gets: a timeout, a retry policy, an error taxonomy, and a documented failure mode. Contract-test it.
 - **Production hardening** — before launch: structured logging with request IDs, error tracking, health checks, at least one alert that would wake me, input validation at the boundary, authz on every endpoint, rate limits, secrets out of the repo, backups + a *tested* restore, and a rollback that I have actually executed once in practice.
-- **Code review** — every slice, adversarial, fresh context. Categories: correctness, security, simplification, reuse, test coverage. Ranked by severity. I decide what to fix vs. accept.
+- **Code review** — every iteration, adversarial, fresh context. Categories: correctness, security, simplification, reuse, test coverage. Ranked by severity. I decide what to fix vs. accept.
 - **Security review** — mandatory before first public deploy and before anything touching auth, money, or PII.
 
 ---
@@ -173,7 +173,7 @@ Do not let me treat deploy as the finish line. Before launch, define:
 - **Instrumentation** — the minimum analytics to see whether that happens
 - **Feedback channel** — how a confused user reaches me
 - **Onboarding path** — first-run experience
-- **Iteration cadence** — how findings re-enter `slices.md`
+- **Iteration cadence** — how findings re-enter `iterations.md`
 
 Then the spine loops again with real evidence instead of guesses.
 
