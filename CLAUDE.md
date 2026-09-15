@@ -28,6 +28,7 @@ tracking is cut ([ADR 0004](docs/adr/0004-drop-per-todo-time-tracking.md)).
 |---|---|
 | Front end / BFF | Next.js — rendering, sign-in state, shaping data for the screen ([ADR 0016](docs/adr/0016-split-into-nextjs-bff-and-fastapi-backend.md)) |
 | Backend | **FastAPI (Python)** — business rules, domain logic, the only thing that touches Postgres |
+| BFF → backend auth | Service credential **+** forwarded user token, verified by the backend itself — [ADR 0017](docs/adr/0017-bff-to-backend-authentication.md). Asymmetric signing keys |
 | Database | PostgreSQL |
 | ORM + migrations | Prisma |
 | Auth | Better Auth, self-hosted. **Stateless JWT sign-in, not database sessions** — [ADR 0014](docs/adr/0014-jwt-sessions-instead-of-database-sessions.md). **15-day token lifetime** |

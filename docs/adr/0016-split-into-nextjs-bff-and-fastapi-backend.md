@@ -63,9 +63,9 @@ plumbing that ADR 0008 counted as pure cost is a substantial part of what is bei
 - **The daemon's endpoint moves to the FastAPI backend.** It is a machine-to-machine endpoint
   with its own credential and has no reason to pass through a front-end server.
 - **Postgres is reached only by the backend.** The BFF never opens a database connection.
-- **TODO(adil): how the BFF authenticates to the backend.** A service credential, or forwarding
-  the user's token. This is an auth rule and sits on the human veto list — Adil decides it, and
-  it belongs in the contracts revision, not here.
+- **How the BFF authenticates to the backend is decided in
+  [ADR 0017](0017-bff-to-backend-authentication.md):** a service credential proves the caller is
+  our BFF, and the user's token is forwarded unchanged for the backend to verify itself.
 
 ## Consequences
 - **Two codebases, two deployments, two dependency sets, two sets of logs.** The cost ADR 0008

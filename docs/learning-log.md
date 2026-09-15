@@ -53,3 +53,6 @@ One line per concept I met and what it means. My proof I am not vibe coding.
 | Service boundary | Choosing two services over one app | The line between two separately deployed programs: they can only talk over a network, so the contract between them has to be written down rather than assumed. |
 | HLD vs LLD | Deciding where each fits in the spine | High-level design is components and boundaries — done once, up front. Low-level design is classes, interfaces and responsibilities inside one component — done per iteration, just before coding it. |
 | API surface | Asking what step 4 actually contains | The menu: every single thing the outside world can ask your system to do. Not how it works inside — that stays free to change. |
+| Defence in depth | BFF-to-backend auth, ADR 0017 | Requiring two independent facts to both hold, so one of them failing does not open the door on its own. |
+| Asymmetric keys | Signing tokens across the service boundary | A private key signs, a public key checks the signature — so a service can verify a token is genuine without being able to create one. |
+| Confused deputy | Why a service credential alone was rejected | When a trusted middleman is tricked into using its own authority on someone else's behalf — here, a BFF bug making the backend serve the wrong user's data. |

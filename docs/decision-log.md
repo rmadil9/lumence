@@ -413,6 +413,37 @@ point of this document.
 
 ---
 
+### ADR 0017 — BFF-to-backend authentication: service credential **and** forwarded user token
+- **Decided by:** Adil · 2026-09-15 · auth rule, on the veto list. Closes the question ADR 0016
+  left open.
+- **The insight:** two separate questions hide in one. *Is this request from our BFF?* and *which
+  user is it for?* They have different failure modes, so one credential cannot answer both well.
+- **Choice:** every BFF-to-backend request carries **both** — a service credential proving the
+  caller is our BFF, and **the user's token forwarded unchanged**, which the backend verifies
+  itself.
+- **The rule that follows:** the backend **never** reads a user identifier from a body, a query
+  parameter, or a header the BFF filled in. Identity comes only from the token it verified. **A
+  BFF bug therefore cannot leak another user's data, because the BFF is never asked who the user
+  is.**
+- **Rejected — service credential alone:** the backend would trust the BFF's claim about
+  identity, so one mistake in the BFF (a user id read from a query parameter instead of the
+  verified session) becomes a **complete authorization bypass**. Exactly the risk ADR 0016 named.
+- **Rejected — forwarded token alone:** safe on identity, but says nothing about whether the
+  caller is our BFF at all.
+- **Also taken, free:** tokens are signed with an **asymmetric key** — the BFF holds the private
+  key and signs, the backend holds only the public key and can verify. The backend can confirm a
+  token is genuine **without being able to create one**, so a compromised backend cannot forge a
+  login.
+- **Cost accepted:** two credentials to manage where one application needed none; both checks on
+  every endpoint, which must live in one shared place rather than be copied per route — repeated
+  authorization code is where mistakes happen.
+- **Unchanged:** the daemon's ingest endpoint keeps its own device token and does not pass
+  through the BFF.
+- **Still open:** where the key pair is generated and stored, and how it is rotated. Rotating it
+  signs everyone out at once — the only global revocation this design has (ADR 0014).
+
+---
+
 ## 3. Decisions made without a separate ADR
 
 | Decision | Made by | Reasoning |
