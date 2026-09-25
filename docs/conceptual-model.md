@@ -1,5 +1,24 @@
 # Conceptual data model
 
+> **Reviewed 2026-09-25 against the signed-off documents. Not adopted.** The session ran without
+> `02-spec.md`, `03-domain.md` or `04-contracts.md` in context, so it re-derived a model that
+> contradicts them in several places (todo statuses, "focus session" instead of the agreed word
+> *lock-in*, per-user timezone against the one-fixed-timezone decision in E7, theme preference
+> and names that are not in scope, credentials that Better Auth owns) and omits three subjects
+> entirely (Device, the chat turn counter, and the whole idle mechanism). Phases 4 and 5 —
+> relationships and scenario validation — were skipped, which are the phases that would have
+> caught this.
+>
+> **Two ideas survived the review and were adopted on their own merits:**
+> - `delayed` as a derived value rather than a stored status →
+>   [ADR 0018](adr/0018-delayed-is-derived-not-stored.md). **Done.**
+> - App and Domain as subjects in their own right, rather than text on every activity sample →
+>   [ADR 0019](adr/0019-app-and-domain-become-their-own-tables.md). **Done, but scoped per user
+>   and *not* per app** — the file's idea that `github.com` in Chrome differs from `github.com`
+>   in Firefox was rejected.
+>
+> Kept as a record of the exercise. **Do not treat anything below as current.**
+
 > Produced from a conceptual-data-modelling interview
 > ([prompt](prompts/conceptual-data-modeling.md)). **Phases 4 (relationships) and 5
 > (scenario validation) were skipped at Adil's request** — relationships below are only

@@ -56,9 +56,14 @@ gradually and nobody notices. Worth a deliberate check at each iteration's revie
 
 ### 1.3 The scheduler
 Runs on a timer with nobody watching:
-- **Spec T4 / E11** — a todo not completed by the end of its due day becomes `delayed`, correct
-  whether or not the app was open at midnight.
 - **Lock-in sweep** — closing a lock-in whose clock ran out unobserved.
+- ~~Spec T4 / E11 — flipping todos to `delayed`.~~ **Removed
+  ([ADR 0018](adr/0018-delayed-is-derived-not-stored.md)):** `delayed` is now derived on read, so
+  nothing has to run at midnight for it to be correct.
+
+**That leaves the scheduler one job.** Whether one job justifies its own container is a fair
+question; it is not reopened here, because Adil chose the scheduler over lazy resolution on
+2026-09-11 and that reasoning is unchanged.
 
 **Python, same image as `backend`, different command.** It needs the database and the domain
 rules, both of which now live in the backend. A separate container rather than a thread, so it

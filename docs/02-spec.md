@@ -35,15 +35,19 @@ profile editing, changing email address.
 |---|---|---|
 | T1 | Create a todo with a title | It appears in the list immediately and survives a reload |
 | T2 | Edit a todo's title | The change persists |
-| T3 | Set a todo's status: `pending`, `in-progress`, `completed`, `delayed` | The status persists and the list reflects it |
-| T4 | A todo not completed by end of its due day becomes `delayed` automatically | At the next day boundary an incomplete todo shows `delayed` — correctly, whether or not the app was open at midnight |
+| T3 | Set a todo's status: `pending`, `in-progress`, `completed` | The status persists and the list reflects it |
+| T4 | A todo not completed by end of its due day shows as `delayed` | An incomplete todo whose due day has passed shows `delayed` — correctly, whether or not the app was open at midnight. **Derived, not stored** ([ADR 0018](adr/0018-delayed-is-derived-not-stored.md)) |
 | T5 | Delete a todo | It is gone permanently, along with everything attached to it. No undo, no archive |
 | T6 | Todos default to creation order | A newly created todo appears at the end of the list |
 | T7 | Reorder todos by drag and drop | The new order persists across reload and across devices |
 
 **Notes**
 - Todos are **due the day they are created**. There is no date picker in v1.
-- `delayed` is set automatically at the day boundary and can also be set manually.
+- **`delayed` is derived, never stored** ([ADR 0018](adr/0018-delayed-is-derived-not-stored.md)):
+  the due day has passed and the todo is not completed. It is computed on every read, so it is
+  correct by construction rather than dependent on a job having run.
+- **`delayed` cannot be set by hand.** It is a fact about time passing, not a status the user
+  asserts. With no date picker, marking a todo delayed never rescheduled anything anyway.
 
 **Out:** due dates other than today, sub-tasks, tags, projects, priorities, recurring
 todos, search, filtering, notes attached to a todo, bulk actions.

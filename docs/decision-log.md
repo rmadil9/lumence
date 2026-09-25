@@ -1,6 +1,6 @@
 # Lumence — Decision Log
 
-**Owner:** Adil · **Last updated:** 2026-09-15 · **Phase:** understanding (no product code yet)
+**Owner:** Adil · **Last updated:** 2026-09-25 · **Phase:** understanding (no product code yet)
 
 This is the one-page record of every judgement made on this project so far, who made it,
 what was rejected, and what it costs to undo. It exists so the reasoning survives the
@@ -457,6 +457,62 @@ point of this document.
   a new front-end will sometimes run against an old backend and vice versa, so **the contract
   between them must stay backward-compatible** — add fields, never remove or repurpose them. A
   breaking change means a new path kept alongside the old one.
+
+---
+
+### ADR 0018 — `delayed` is derived, not a stored status
+- **Decided by:** Adil · 2026-09-25 · amends signed-off `02-spec.md` (T3, T4) and
+  `04-contracts.md`. Surfaced by the conceptual-modelling session and kept after cross-checking.
+- **Choice:** three stored statuses — `pending`, `in-progress`, `completed`. **`delayed` is
+  computed when the todo is read**: its due day has passed and it is not completed. Nothing
+  writes it, and it **cannot be set by hand** any more.
+- **Rejected:** keeping it stored with a midnight job (the signed-off design); storing it *and*
+  deriving it as a fallback — two sources of truth for one fact, which can disagree, and the
+  disagreement is very hard to see.
+- **Why it is stronger, not just simpler:** spec T4 asks for `delayed` to be right *"whether or
+  not the app was open at midnight."* A derived value is computed fresh on every read, so it is
+  **correct by construction**. The stored version was only correct if a nightly job had actually
+  run — a weaker guarantee than the spec asks for.
+- **Removes one of the scheduler's two jobs.** Only the lock-in sweep is left.
+- **What is lost, and it was small:** marking a todo `delayed` by hand. With no date picker in
+  v1 it never rescheduled anything — the todo stayed in the same list either way. It was a label
+  meaning "not doing this today".
+- **Behaviour change:** reopening a completed todo from a past day now immediately reads as
+  `delayed`, rather than showing whatever was last written. The more honest answer.
+- **Timing matters:** the status enum drops from four values to three. Removing an enum value is
+  awkward once rows exist, which is exactly why this was worth deciding before any exist.
+
+---
+
+### ADR 0019 — App and Domain become their own tables, scoped per user
+- **Decided by:** Adil · 2026-09-25 · **AI recommended plain text and was overruled.** Amends
+  signed-off `04-contracts.md` and `03-domain.md`. The second surviving idea from the
+  conceptual-modelling session.
+- **Choice:** two small per-user tables, `app` and `domain`. An activity sample references them
+  by id instead of repeating their names on ~2,400 rows a day. Rows are **created automatically
+  the first time that user is seen using them** — nobody registers anything.
+- **Rejected first, separately:** scoping a domain *inside* an app, so `github.com` in Chrome and
+  in Firefox are two records. The conceptual file itself conceded a cross-app total would then be
+  "a derived rollup computed at query time" — splitting the data and un-splitting it on every
+  read. Spec D2 asks for time per domain, singular. **A domain is a domain.**
+- **The AI's argument, recorded:** nothing in D1 or D2 needs anything about an app beyond a name
+  and a number, so the extra table earns nothing and costs a join on every read. Storage favours
+  ids by ~14 MB per user-year on a 100 GB disk — not a reason either way.
+- **Per-user rather than a shared catalogue**, decided by this rule: *a shared catalogue exists to
+  hold shared knowledge about an app; no shared knowledge, no reason to share the table.* Products
+  that label apps productive or unproductive need one, because that judgement is the same for
+  everyone. **ADR 0006 removed all classification from this product**, so the one thing a global
+  catalogue is for does not exist here. It would also have been the only table in the schema not
+  owned by a user.
+- **Cost accepted:** the hottest write in the system gains a step — ingest must resolve each name
+  to an id before inserting. And every read now joins to get names back.
+- **The race, and its fix:** two samples naming a new app can arrive together and both try to
+  create it. A **unique constraint on (user, name)** plus an upsert makes the repeat harmless —
+  the same discipline as the activity key itself, rather than trying to prevent the collision.
+- **Unchanged:** the daemon still sends **names**, not ids. The ingest wire format is identical,
+  so no deployed client is affected.
+- **What it buys:** somewhere to put an icon or display name later, and the ability to correct a
+  name in one row instead of rewriting history.
 
 ---
 

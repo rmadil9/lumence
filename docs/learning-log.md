@@ -58,3 +58,10 @@ One line per concept I met and what it means. My proof I am not vibe coding.
 | Confused deputy | Why a service credential alone was rejected | When a trusted middleman is tricked into using its own authority on someone else's behalf — here, a front-end bug making the backend serve the wrong user's data. |
 | Backward-compatible contract | Versioning the two services separately | Only ever adding to an interface, never removing or repurposing — so an older caller keeps working when the other side is updated first. |
 | Generated types | Stopping the Python and TypeScript descriptions from drifting | Having a tool write the front-end's type definitions from the backend's own API description, so the same thing is defined once instead of twice by hand. |
+| Derived vs stored | Todo `delayed`, ADR 0018 | A value computed when you read it rather than written down — always correct with nothing to run, but it cannot be overridden by hand and cannot be indexed. |
+| Correct by construction | Why derived `delayed` beats a nightly job | When a rule cannot be violated because of how the thing is built, rather than because something ran successfully and kept it true. |
+| Two sources of truth | Rejecting store-and-also-derive | The same fact recorded in two places; they eventually disagree, and the disagreement is the kind of bug nobody spots. |
+| Lookup table | App and Domain, ADR 0019 | A small table holding each distinct value once, referenced by id from a large table — saves repetition and gives the value somewhere to carry extra facts. |
+| Upsert | Creating an app row the first time a user is seen using it | Insert, and if a row with that key already exists, take the existing one — so two requests racing to create the same thing both succeed. |
+| Shared vs per-tenant catalogue | Choosing per-user app rows | Share a lookup table only when there is shared knowledge to put in it; with nothing shared, per-user keeps every row owned by someone. |
+| Hot path | The cost of resolving names to ids at ingest | The code that runs most often — where a small extra step is multiplied by volume and is worth thinking about before adding to it. |

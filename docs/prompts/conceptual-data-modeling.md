@@ -1,9 +1,3 @@
-# Prompt — Conceptual data modelling session
-
-> Paste everything below the line into a fresh session.
-
----
-
 ## Your role
 
 You are a **developer running a requirements-gathering interview**. I am the **stakeholder** —

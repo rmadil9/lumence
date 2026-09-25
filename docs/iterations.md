@@ -44,7 +44,9 @@ Spec A1–A7. Better Auth, stateless JWT ([ADR 0014](adr/0014-jwt-sessions-inste
 
 ### 2 — Ingest endpoint + device registration
 The server half of capture, built **before** the client. Contract is `04-contracts.md` part 3.
-- `activity_sample` and `device` tables · register a device, token shown once, stored hashed
+- `activity_sample`, `device`, `app` and `domain` tables · register a device, token shown once,
+  stored hashed · **apps and domains created on first sight, upserted on a unique (user, name)**
+  ([ADR 0019](adr/0019-app-and-domain-become-their-own-tables.md))
 - `POST /api/ingest/activity` — batch, duplicate-ignore, partial accept, error codes
 - **Done when:** `curl` can post a batch twice and the row count does not change
 - **Why before the daemon:** it is testable without any desktop code, and it proves the riskiest
@@ -72,8 +74,9 @@ Spec D1–D6. The payoff for iterations 2–4.
 
 ### 6 — Todos
 Spec T1–T7. Known work, no risk.
-- CRUD · four statuses, none final · fractional positions for drag-and-drop
-- Scheduler container: the `delayed` flip at the day boundary (T4, E11)
+- CRUD · **three** stored statuses, none final · fractional positions for drag-and-drop
+- **`delayed` is derived on read**, not stored and not scheduled
+  ([ADR 0018](adr/0018-delayed-is-derived-not-stored.md))
 
 ### 7 — Lock-in
 Spec L1–L8. Countdown derived from `expires_at`, never stored.

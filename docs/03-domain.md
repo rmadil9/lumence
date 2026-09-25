@@ -29,7 +29,7 @@ conversation about it can never be ambiguous.
 | **Chat turn** | One message sent to the LLM and its reply | Message, prompt, request |
 | **Device** | One machine registered to report activity | Client, agent, tracker |
 | **Activity sample** | One 15-second observation of what had focus | Event, heartbeat, tick, record |
-| **Application** | The desktop program that had focus | App name, process, window |
+| **App** | The desktop program that had focus — a thing in its own right, not a label | Application, process, window |
 | **Domain** | The website that had focus inside the browser | Site, URL, host, tab |
 | **Day** | A calendar day in the one fixed timezone | Date, period |
 
@@ -55,7 +55,9 @@ The person. Created by signing up; one per email address.
 ### Todo
 One line on today's list.
 
-- Has a **title** (spec T1, T2) and a **status** (T3).
+- Has a **title** (spec T1, T2) and a **status** — one of `pending`, `in-progress`, `completed`
+  (T3). **`delayed` is not among them**; it is derived
+  ([ADR 0018](adr/0018-delayed-is-derived-not-stored.md)).
 - Has a **due day**, which is **the day it was created**. There is no date picker in v1
   (spec T, *Notes*).
 - Has a **position** in the list, which the user can drag to change (T6, T7).
@@ -108,6 +110,23 @@ One machine registered to report activity.
   sample's key, so the design supports more later with no migration — v1 simply refuses to
   register a second one.
 
+### App
+One application this user has been seen using ([ADR 0019](adr/0019-app-and-domain-become-their-own-tables.md)).
+- Has a **name** as the desktop reports it — `Code`, `Slack`, or `Desktop` for the bare desktop.
+- **Belongs to exactly one user.** One person's "Chrome" and another's are different things.
+- **Created automatically the first time that user is seen using it.** Nobody registers apps.
+- Carries **no judgement** — no category, no productive/unproductive flag, no score
+  ([ADR 0006](adr/0006-lock-in-is-a-plain-countdown.md)). It is a name and nothing more.
+
+### Domain
+One website this user has been seen visiting inside a browser.
+- Has a **name**, e.g. `github.com`.
+- **Belongs to exactly one user**, and is **not** tied to the browser it was seen in —
+  `github.com` is one thing however many browsers reach it (spec D2 asks for time per domain,
+  singular).
+- Created automatically on first sight, like an App.
+- Exists only if the browser extension was built. **Empty is a normal state for this subject.**
+
 ### Activity sample
 One 15-second observation. The highest-volume thing in the product, ~2,400 per user per
 working day.
@@ -115,8 +134,8 @@ working day.
 Each one records:
 - the **device** it came from,
 - the **box** it belongs to — a 15-second slot, timestamps rounded down onto a fixed grid,
-- the **application** that had focus,
-- the **domain**, if the focused application was a browser and the browser extension is
+- which **App** had focus,
+- which **Domain**, if the focused application was a browser and the browser extension is
   installed — **optional, and empty is normal** (this is the seam that keeps contingency
   ladder rung 1 cheap),
 - **seconds since the last keyboard or mouse input**,
@@ -160,20 +179,25 @@ idle rule is applied when the day view is read, never when the sample is written
 
 ```
    created ──► pending ⇄ in-progress ⇄ completed
-                  │           │            │
-                  └─────┬─────┴────────────┘
-                        ▼
-                     delayed          (set automatically at the day boundary,
-                                       and also settable by hand)
 
    every arrow runs both ways — no status is final, completed included
+
+   ┌──────────────────────────────────────────────────────────┐
+   │  delayed is NOT a state here. It is computed on read:     │
+   │     due day has passed  AND  status is not completed      │
+   │  So it is always correct, with no job to run and nothing  │
+   │  for the user to set by hand (ADR 0018).                  │
+   └──────────────────────────────────────────────────────────┘
 ```
 
-- All four states are set by the user (spec T3).
-- **`delayed` is also set automatically:** a todo not `completed` by the end of its due day
-  becomes `delayed` at the day boundary (T4).
-- That flip must be **correct whether or not the app was open at midnight** (T4, E11). It is
-  therefore a property of time passing, not of anyone looking.
+- All three stored states are set by the user (spec T3).
+- **`delayed` is derived, not stored** ([ADR 0018](adr/0018-delayed-is-derived-not-stored.md)):
+  the due day has passed and the todo is not completed.
+- T4 and E11 require it to be right *"whether or not the app was open at midnight."* A derived
+  value is computed fresh on every read, so it is correct **by construction** — a stronger
+  guarantee than a stored value that depends on a nightly job having run.
+- It is a property of time passing, not something anyone asserts, so **it cannot be set by
+  hand.**
 - **A completed todo can be reopened** (Adil, 2026-09-02). `completed` is not final — status
   moves freely in any direction, consistent with spec T3.
 - Deletion is available from **any** state and is permanent (T5).
@@ -200,6 +224,23 @@ idle rule is applied when the day view is read, never when the sample is written
 - A running lock-in **survives a page reload** (L2) and **survives being signed out** (E5).
   It therefore lives on the server, not in the browser tab.
 
+### App
+One application this user has been seen using ([ADR 0019](adr/0019-app-and-domain-become-their-own-tables.md)).
+- Has a **name** as the desktop reports it — `Code`, `Slack`, or `Desktop` for the bare desktop.
+- **Belongs to exactly one user.** One person's "Chrome" and another's are different things.
+- **Created automatically the first time that user is seen using it.** Nobody registers apps.
+- Carries **no judgement** — no category, no productive/unproductive flag, no score
+  ([ADR 0006](adr/0006-lock-in-is-a-plain-countdown.md)). It is a name and nothing more.
+
+### Domain
+One website this user has been seen visiting inside a browser.
+- Has a **name**, e.g. `github.com`.
+- **Belongs to exactly one user**, and is **not** tied to the browser it was seen in —
+  `github.com` is one thing however many browsers reach it (spec D2 asks for time per domain,
+  singular).
+- Created automatically on first sight, like an App.
+- Exists only if the browser extension was built. **Empty is a normal state for this subject.**
+
 ### Activity sample
 No lifecycle. A sample is written once and never changes. It is a fact about a moment that
 has already passed.
@@ -209,7 +250,9 @@ has already passed.
 ## 4. Invariants — the rules that must never break
 
 **Ownership and access**
-1. Every todo, notepad, chat turn, device and activity sample belongs to **exactly one user**.
+1. Every todo, notepad, chat turn, device, app, domain and activity sample belongs to **exactly
+   one user**. There is no shared or global table anywhere in this product
+   ([ADR 0019](adr/0019-app-and-domain-become-their-own-tables.md)).
 2. **No query ever crosses users.** User B cannot read or write anything belonging to user A
    (spec A7, E8). This is a security property, not a feature.
 3. An **unverified** user can read and write **no app data at all** (A1).
@@ -226,8 +269,9 @@ has already passed.
 
 **Todos**
 8. A todo's **due day is the day it was created** and never changes (spec T, *Notes*).
-9. A todo that is not `completed` at the end of its due day **is** `delayed` — regardless of
-   whether anyone opened the app (T4, E11).
+9. A todo that is not `completed` and whose due day has passed **reads as** `delayed` —
+   regardless of whether anyone opened the app (T4, E11). It is never written down
+   ([ADR 0018](adr/0018-delayed-is-derived-not-stored.md)).
 10. Every todo has a position, and positions within one user's list are unambiguous, so the
     order is identical on every device (T7).
 
@@ -252,6 +296,9 @@ has already passed.
 
 **Activity**
 18a. **A user has at most one device in v1.** Registering a second is refused.
+18b. **An app or domain name is unique within one user.** Two rows with the same name for the
+    same person cannot exist, which is what makes creating them on first sight safe when two
+    samples arrive at once (ADR 0019).
 19. **At most one activity sample per (device, box).** A second one for the same pair is
     silently ignored, not an error — this is what makes a replayed backlog safe (E10,
     ADR 0009).

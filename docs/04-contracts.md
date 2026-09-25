@@ -54,7 +54,7 @@ table will notice.
 | `id` | uuid | primary key |
 | `user_id` | uuid | foreign key → `user.id`, not null |
 | `title` | text | not null (spec T1, T2) |
-| `status` | enum | `pending` · `in_progress` · `completed` · `delayed` (T3) |
+| `status` | enum | `pending` · `in_progress` · `completed` (T3). **`delayed` is not stored** — it is derived on read ([ADR 0018](adr/0018-delayed-is-derived-not-stored.md)) |
 | `due_day` | date | not null. **The day the todo was created**, in the fixed timezone |
 | `position` | double precision | not null. Fractional ordering — see below |
 | `created_at` | timestamptz | not null |
@@ -65,6 +65,10 @@ table will notice.
 - **`due_day` never changes** (invariant 8). There is no date picker in v1.
 - **No status is final** — `completed` can go back to `pending` (Adil, 2026-09-02). The enum
   is a set of labels, not a one-way ladder.
+- **`delayed` is computed, never written** ([ADR 0018](adr/0018-delayed-is-derived-not-stored.md)):
+  `due_day < today AND status <> 'completed'`. There is no column for it and no job to set it,
+  so T4 and E11 hold by construction rather than by a nightly job having succeeded. It also
+  cannot be set by hand.
 - **Deletion is a real `DELETE`**, not a flag. Spec T5: gone permanently, no undo, no archive.
 
 **Why fractional positions** (decided by Adil, 2026-09-03). Each todo holds a decimal. Dropping
@@ -197,7 +201,47 @@ One registered capture client ([ADR 0009](adr/0009-activity-capture-fixed-window
 
 ---
 
-## 1.6 `activity_sample`
+## 1.6 `app` and `domain`
+
+Two small per-user lookup tables ([ADR 0019](adr/0019-app-and-domain-become-their-own-tables.md)).
+Dozens of rows per user, not thousands.
+
+**`app`**
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | primary key |
+| `user_id` | uuid | foreign key → `user.id`, not null |
+| `name` | text | not null. As reported by the desktop, e.g. `Code`, or `Desktop` for the bare desktop |
+| `created_at` | timestamptz | not null. When this user was first seen using it |
+
+**`domain`**
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | primary key |
+| `user_id` | uuid | foreign key → `user.id`, not null |
+| `name` | text | not null, e.g. `github.com` |
+| `created_at` | timestamptz | not null |
+
+- **Unique constraint on `(user_id, name)` on both.** This is what makes create-on-first-sight
+  safe: two samples naming a new app can arrive at the same moment, and both try to create it.
+  With the constraint, the insert is an **upsert** — *insert, and if it already exists, take the
+  existing row*. Same discipline as the activity key: make the repeat harmless rather than try to
+  prevent it.
+- **Scoped per user**, so domain invariant 1 holds — every row in this schema belongs to exactly
+  one user. A shared catalogue would have been the only exception, and it earns nothing here
+  because the product never classifies applications ([ADR 0006](adr/0006-lock-in-is-a-plain-countdown.md)).
+- **A domain is scoped to the user, not to the app it was seen in.** `github.com` is one row
+  however many browsers reach it — spec D2 asks for time per domain, singular.
+- **Rows are created by the server on first sight.** The daemon never learns that ids exist; it
+  keeps sending names.
+- Nothing else hangs off these tables in v1. They are the place an icon or display name *would*
+  live, which is what the second table buys.
+
+---
+
+## 1.7 `activity_sample`
 
 The high-volume table — roughly **2,400 rows per user per ten-hour day** (ADR 0009). Every other
 table in this schema is tiny by comparison.
@@ -207,8 +251,8 @@ table in this schema is tiny by comparison.
 | `device_id` | uuid | foreign key → `device.id` |
 | `box_start` | timestamptz | the start of the 15-second box, rounded down onto a fixed grid |
 | `user_id` | uuid | foreign key → `user.id`. **Set by the server from the device token** |
-| `application` | text | not null. The focused application, or `"Desktop"` for the bare desktop |
-| `domain` | text | **nullable, and null is normal** — see below |
+| `app_id` | uuid | foreign key → `app.id`, not null ([ADR 0019](adr/0019-app-and-domain-become-their-own-tables.md)) |
+| `domain_id` | uuid | foreign key → `domain.id`. **Nullable, and null is normal** — see below |
 | `idle_seconds` | integer | not null. Seconds since the last keyboard or mouse input |
 | `screen_locked` | boolean | not null. Locked means awake but absent — **not** asleep, which produces no rows at all |
 | `idle_inhibited` | boolean | not null. Whether an application is asking the desktop to stay awake ([ADR 0015](adr/0015-idle-inhibitor-distinguishes-watching-from-away.md)) |
@@ -228,10 +272,16 @@ per-user filter (spec A7) a condition on the table being read rather than on a j
 harder to get wrong. It is written by the server from the device token, never from the request
 body (invariant 4).
 
-**`domain` is nullable, and this is the seam.** It is empty whenever the focused application is
-not a browser, and empty *always* if the browser extension was never built. Contingency ladder
+**`domain_id` is nullable, and this is the seam.** It is empty whenever the focused application
+is not a browser, and empty *always* if the browser extension was never built. Contingency ladder
 rung 1 — dropping browser tracking — is therefore **not a schema change**: the column simply
 stays null and the day view's domain panel is empty. Nothing migrates.
+
+**Names are referenced, not repeated** ([ADR 0019](adr/0019-app-and-domain-become-their-own-tables.md)).
+The cost is a step on the hottest write in the system: ingest must resolve each name to an id
+before inserting the sample, and every read must join to get the name back. The benefit is a
+place to put anything *about* an app later, and the ability to correct a name in one row instead
+of rewriting history. I recommended plain text and was overruled; the reasoning is in the ADR.
 
 - **Index: `(user_id, box_start)`.** Serves the day view (D1, D2), the lock-in review (L7), and
   nothing else. Both queries are "this user, this time range".
@@ -257,7 +307,7 @@ feature. Revisit only if disk becomes a real constraint on the VPS.
 
 ---
 
-## 1.7 What is deliberately absent
+## 1.8 What is deliberately absent
 
 Named so their absence reads as a decision rather than an oversight:
 
@@ -361,9 +411,9 @@ Covers spec A1–A6. Two configuration facts this contract depends on:
   same one.
 - **Any status may be set from any status.** `completed` is not final (Adil, 2026-09-02).
 - **Delete is permanent** — no undo, no archive (T5).
-- **`delayed` is not set here.** A todo not completed by the end of its due day is flipped by the
-  scheduled job (T4, E11), correctly whether or not the app was open. It can also be set by hand
-  through *Set a status*.
+- **`delayed` is never set, by anything.** It is derived on read
+  ([ADR 0018](adr/0018-delayed-is-derived-not-stored.md)) — there is no operation for it and no
+  job behind it. *Set a status* accepts only the three stored values.
 
 ## 2.4 Lock-in
 
@@ -541,8 +591,8 @@ Content-Type: application/json
 | `clientSentAt` | Required. What the laptop believed the time was when it sent. **Diagnostic only** — no behaviour depends on it |
 | `samples` | Required. **1 to 500 entries**, oldest first |
 | `boxStart` | Required, UTC, and **must fall exactly on a 15-second boundary**. Anything else is a daemon bug |
-| `application` | Required, non-empty. `"Desktop"` for the bare desktop with nothing open (ADR 0009) |
-| `domain` | Optional, and **null is the normal case** — present only when the focused application is a browser and the extension is installed |
+| `application` | Required, non-empty. `"Desktop"` for the bare desktop with nothing open (ADR 0009). **A name, not an id** — the server resolves it, creating the `app` row on first sight ([ADR 0019](adr/0019-app-and-domain-become-their-own-tables.md)) |
+| `domain` | Optional, and **null is the normal case** — present only when the focused application is a browser and the extension is installed. Also a name, resolved the same way |
 | `idleSeconds` | Required, zero or greater. Seconds since the last keyboard or mouse input |
 | `screenLocked` | Required boolean. The machine is awake with the screen locked. A **sleeping** machine sends nothing at all |
 | `idleInhibited` | Required boolean. An application is asking the desktop to stay awake — the signal that separates watching from being away (ADR 0015) |
@@ -672,6 +722,8 @@ Stated plainly because each one is a rule that a future change could quietly bre
 1. **Never trusts a user identifier from the client.** The user comes from the device token
    (invariant 4).
 2. **Never files a sample by arrival time.** Only by `boxStart` (invariant 20).
+2a. **Never asks the daemon for an app or domain id.** The wire format carries names; resolving
+   them to rows is the server's job, so no deployed daemon is affected by ADR 0019.
 3. **Never modifies or deletes a sample** once written (invariant 21).
 4. **Never applies the idle rule at write time.** It stores facts; the day view applies the rule
    (invariant 22, ADR 0009).
