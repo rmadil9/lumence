@@ -331,6 +331,18 @@ activity samples are kept indefinitely.
 
 # Part 2 — API surface
 
+> **Being revised, 2026-10-06.** [ADR 0016](adr/0016-split-into-nextjs-bff-and-fastapi-backend.md)
+> split the product into a Next.js front-end and a FastAPI backend, so there are now **two**
+> boundaries where this document described one:
+>
+> | Boundary | State |
+> |---|---|
+> | browser → front-end | The operations below still hold |
+> | front-end → backend | **To be designed.** See §2.10 |
+> | daemon → backend | Part 3, unchanged |
+
+
+
 > Drafted 2026-09-03. Every operation below is **scoped to the signed-in user**. There is no
 > route anywhere in this product that reads or writes across users.
 
@@ -528,7 +540,7 @@ Covers spec A1–A6. Two configuration facts this contract depends on:
 - **Revoking does not delete the device or its samples.** It sets `revoked_at`, ingest starts
   refusing that token, and the history stays (§1.5).
 
-## 2.9 Part 2 — resolved
+## 2.9 Earlier decisions — resolved
 
 Both questions closed on 2026-09-03: **Server Actions for the interface, an HTTP route for
 ingest only**; notepad saves are **last-write-wins, with the client told** when it overwrote a
@@ -755,3 +767,52 @@ Three things were locked here before a capture client has ever run against them,
 box grid, the `(device_id, box_start)` key, and the batch-and-retry protocol. If the daemon turns
 out to need something different, that is an ADR and a migration, not a quiet edit.
 
+
+---
+
+## 2.10 The front-end → backend boundary
+
+Created by [ADR 0016](adr/0016-split-into-nextjs-bff-and-fastapi-backend.md). Authenticated by a
+forwarded user token the backend verifies itself
+([ADR 0017](adr/0017-bff-to-backend-authentication.md)).
+
+### Decided 2026-10-06
+
+**1. The backend shapes the data. The front-end renders it.**
+
+> Reversed on 2026-10-06, shortly after the opposite was recorded. Nothing had been built.
+
+The backend exposes whatever endpoints serve the product, **including composed ones** where a
+screen genuinely needs several things together. The day view asks for a day and receives a day —
+per-app totals, per-domain totals and that day's lock-ins — rather than making three calls and
+stitching them together itself.
+
+- **Why:** assembling data is backend work. Doing it in the front-end means the logic for *what
+  belongs together* lives on the presentation side, where it is harder to test and easy to
+  duplicate.
+- **Each side owns its own job.** The backend owns data and its shape. The front-end owns
+  presentation.
+- **Cost, stated once:** a screen that needs a different combination may need a backend change.
+  Accepted — the two are built and deployed by the same person.
+- **Not a hard rule.** A composed endpoint is a judgement call per case, not a doctrine. Where a
+  plain resource serves, use a plain resource.
+
+**2. The line that still holds: rules are backend-only.**
+
+The front-end never **decides** anything about the product.
+
+- Working out whether a todo is `delayed`, whether a lock-in may start, or whether a chat turn is
+  within the cap is a **rule** — backend only, always.
+- This is the standard way the pattern rots, and it rots gradually. Worth checking at each
+  iteration's review.
+
+**3. REST conventions throughout.** Resources and standard verbs, as a backend developer would
+expect to find them. Not re-litigated.
+
+### Still to design
+
+**The endpoints themselves — treated as its own piece of work**, not decided in passing here.
+Resources, paths, verbs, status codes, error shape, and how the operations in §2.3–§2.8 map onto
+them.
+
+**TODO(adil):** the resource list and routes.
