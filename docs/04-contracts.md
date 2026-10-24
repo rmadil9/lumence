@@ -809,10 +809,157 @@ The front-end never **decides** anything about the product.
 **3. REST conventions throughout.** Resources and standard verbs, as a backend developer would
 expect to find them. Not re-litigated.
 
-### Still to design
+### What gets decided upfront, and what does not
 
-**The endpoints themselves — treated as its own piece of work**, not decided in passing here.
-Resources, paths, verbs, status codes, error shape, and how the operations in §2.3–§2.8 map onto
-them.
+**Upfront: the conventions** (§2.11). They are expensive to make consistent later — by the
+fifteenth endpoint you have four error formats and no cheap way back.
 
-**TODO(adil):** the resource list and routes.
+**As we go: the endpoints themselves.** Each iteration brings the ones it needs. Iteration 2
+brings ingest and devices; iteration 6 brings todos. Designing iteration 9's chat endpoint today
+serves nothing, and it contradicts WIP = 1.
+
+### Resources and queries
+
+The test: **if you cannot sensibly `POST` or `DELETE` it, it is not a resource — it is a query.**
+A resource has identity and a lifecycle. A query is a computed view with neither.
+
+| Resources | Queries |
+|---|---|
+| `todo` · `lock-in` · `notepad` · `device` | day totals · lock-in review · remaining chat turns |
+
+`app` and `domain` are resources the server creates on its own
+([ADR 0019](adr/0019-app-and-domain-become-their-own-tables.md)); nothing external creates or
+deletes them, so they are read-only from the API's point of view.
+
+Not a closed list. Later iterations will add to it.
+
+---
+
+## 2.11 API conventions
+
+Decided once, applied everywhere. Where a route seems to be missing a rule, it is because it is
+here.
+
+### Naming
+- **Plural nouns for collections:** `/todos`, `/lock-ins`, `/devices`.
+- **Lower-case, hyphen-separated** in paths: `/lock-ins`, not `/lockIns` or `/lock_ins`.
+- **Verbs only where the thing genuinely is an action**, and then as a sub-path on its resource:
+  `POST /lock-ins/current/pause`. Pausing is not a field you set — it is an operation with rules
+  behind it, and the server decides what it means.
+- **No endpoint is named after a screen.**
+
+### Verbs
+| Verb | Means | Repeating it |
+|---|---|---|
+| `GET` | Read. Never changes anything | Safe |
+| `POST` | Create, or perform an action | Safe **only** where a client-supplied id makes it so — see *Idempotency* |
+| `PATCH` | Change some fields of an existing thing | Safe |
+| `PUT` | Replace the whole thing | Safe |
+| `DELETE` | Remove it | Safe — deleting something already gone is `204`, not an error |
+
+### Casing on the wire
+**`snake_case` everywhere**, in request and response bodies alike.
+
+- The backend is Python and generates this shape naturally; the daemon is Python too.
+- **This changes part 3.** The daemon's contract currently uses `boxStart`, `clientSentAt`,
+  `idleSeconds`, `screenLocked`, `idleInhibited` — written when the server was going to be
+  TypeScript ([ADR 0008](adr/0008-stack-single-nextjs-app-on-docker.md), since superseded by
+  [ADR 0016](adr/0016-split-into-nextjs-bff-and-fastapi-backend.md)). Those become `box_start`,
+  `client_sent_at`, `idle_seconds`, `screen_locked`, `idle_inhibited`. **No client exists yet**,
+  so this costs nothing now and would be awkward later.
+- The front-end converts at its own edge if it wants camelCase in its own code. That is a
+  front-end concern and does not reach the wire.
+
+### Types
+- **Ids:** UUID as a string.
+- **Instants:** ISO 8601, UTC, with `Z`. Never a local time, never an offset.
+- **Days:** `YYYY-MM-DD`, interpreted in the one fixed timezone (spec E7). No endpoint accepts a
+  timezone.
+- **Durations:** integer seconds. Never "2h30m" and never a float.
+
+### Status codes
+Conventional, plus the cases this product actually hits:
+
+| Code | When |
+|---|---|
+| `200` | Read succeeded, or an action succeeded and returns something |
+| `201` | A resource was created |
+| `204` | Succeeded, nothing to return — deletes |
+| `400` | The request is malformed |
+| `401` | No token, or the token is invalid or expired |
+| `403` | Authenticated but not permitted — **an unverified user touching app data** (spec A1) |
+| `404` | Not found, **and also: it exists but is not yours.** Returning `403` would confirm it exists |
+| `409` | Conflicts with current state — **starting a lock-in while one is live** (spec L8) |
+| `422` | Well-formed but fails validation. FastAPI's default for this, so adopted rather than fought |
+| `429` | **The 20-turn daily chat cap** (spec M5), and the ingest rate limit |
+| `5xx` | Our fault. Never used to report something the client did |
+
+**`403` versus `404` is the one worth getting right.** An unverified user is told `403` because
+they know they have an account. A user asking for someone else's todo gets `404`, because the
+honest answer — "that exists, but not for you" — leaks that it exists.
+
+### Error shape
+One envelope, everywhere:
+
+```json
+{
+  "error": {
+    "code": "lock_in_already_running",
+    "message": "A lock-in is already running.",
+    "request_id": "01JBX…"
+  }
+}
+```
+
+- **`code` is machine-readable and stable.** Clients branch on it. It is never reworded, because
+  rewording it is a breaking change — a new meaning gets a new code.
+- **`message` is for a person** and may change freely. Never parsed.
+- **`request_id` is in every error**, and matches the structured log line for that request
+  (`01-problem.md` success criterion 6). It is the thing that makes a 2am problem traceable.
+- `422` additionally carries which fields failed. Nothing else carries extra keys.
+
+### Authorisation
+- **One place, not per route.** In FastAPI that is a single dependency every route declares;
+  there is no route that opts out by forgetting to.
+- It verifies the forwarded token's signature
+  ([ADR 0017](adr/0017-bff-to-backend-authentication.md)) and puts the user on the request.
+- **The user is never read from a path, a query parameter, or a body.** No endpoint accepts a
+  user identifier. A request can only ask for "mine".
+- **Every query filters by that user.** Not a convention — an invariant (`03-domain.md` 1–4).
+
+### Filtering and collections
+- **Filters are query parameters:** `GET /todos?day=2026-10-06`.
+- **No pagination in v1, deliberately.** Every collection is naturally bounded — a day's todos, a
+  day's lock-ins. Activity samples are always aggregated and never returned row by row. Adding
+  pagination later is additive; building it now is machinery for no caller.
+- **An empty collection is `200` with an empty list**, never `404`. A day with no data is a
+  normal day (spec D3).
+
+### Idempotency
+- **The client supplies the id when creating a todo or starting a lock-in.** A repeated `POST`
+  with the same id returns the existing resource rather than making a second one — this is how
+  spec E3, double-clicking a button, is closed.
+- **The daemon's ingest endpoint is idempotent on `(device, box_start)`** (part 3), which is what
+  makes a replayed backlog safe.
+- Everything else is naturally repeatable: `GET`, `PATCH`, `PUT`, `DELETE`.
+
+### Request tracing
+- The front-end generates a **request id** per browser action and **forwards it to the backend**.
+- Both services log it. One browser action is therefore traceable across both.
+- Without this the split makes debugging meaningfully harder, which is a cost of the split rather
+  than a feature.
+
+### Compatibility
+The two services are **versioned and deployed separately** (2026-09-15), so a new front-end will
+sometimes run against an old backend and the reverse.
+
+- **Additive changes only.** Fields may be added. They are never removed, renamed, or given a new
+  meaning.
+- **A breaking change gets a new path**, kept alongside the old one until both sides have moved.
+- The same policy already governs the daemon's endpoint (§3.9), for the same reason: the two
+  sides update on different schedules.
+
+### Not in v1
+Named so their absence is a decision: no pagination · no sorting parameters · no partial-response
+or field-selection parameters · no bulk endpoints · no ETags or conditional requests · no
+API-key auth for third parties.

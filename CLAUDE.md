@@ -91,6 +91,7 @@ In short: answer in points, plain words, keep it short, and commit without askin
 | [02-spec.md](docs/02-spec.md) | v1 behaviours in and explicitly out |
 | [03-domain.md](docs/03-domain.md) | Entities, lifecycle states, invariants, ubiquitous language — **signed off 2026-09-02** |
 | [04-contracts.md](docs/04-contracts.md) | Data schema + API surface + tracker ingest — **SIGNED OFF 2026-09-11. The lock-in point — changes need an ADR** |
+| [06-ux.md](docs/06-ux.md) | **Spine step 5** — personas, flows, wireframes, design system, motion. Phase 0 done |
 | [05-architecture.md](docs/05-architecture.md) | **The HLD** — components, boundaries, deployment topology. Redrawn 2026-09-15 for two services |
 | [adr/](docs/adr/) | One irreversible decision each |
 | [iterations.md](docs/iterations.md) | Risk-ordered delivery backlog + retro lines |
