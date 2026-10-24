@@ -65,3 +65,5 @@ One line per concept I met and what it means. My proof I am not vibe coding.
 | Upsert | Creating an app row the first time a user is seen using it | Insert, and if a row with that key already exists, take the existing one — so two requests racing to create the same thing both succeed. |
 | Shared vs per-tenant catalogue | Choosing per-user app rows | Share a lookup table only when there is shared knowledge to put in it; with nothing shared, per-user keeps every row owned by someone. |
 | Hot path | The cost of resolving names to ids at ingest | The code that runs most often — where a small extra step is multiplied by volume and is worth thinking about before adding to it. |
+| prefers-reduced-motion | The runner animation on the timer | A browser setting saying the person does not want animation; honouring it is one line of CSS and stops your design fighting their accessibility choice. |
+| Progress toward a chosen target | Why a depleting timer is fine but a depleting day view is not | Showing progress is only neutral when the user set the target themselves — against a target they did not choose, the same bar becomes a judgement. |
