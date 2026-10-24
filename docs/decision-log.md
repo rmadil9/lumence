@@ -1,6 +1,6 @@
 # Lumence — Decision Log
 
-**Owner:** Adil · **Last updated:** 2026-10-06 · **Phase:** understanding (no product code yet)
+**Owner:** Adil · **Last updated:** 2026-10-24 · **Phase:** understanding (no product code yet)
 
 This is the one-page record of every judgement made on this project so far, who made it,
 what was rejected, and what it costs to undo. It exists so the reasoning survives the
@@ -540,6 +540,10 @@ point of this document.
 | **The timer measures, it never blocks** | Adil | Blocking applications is privileged system software and a different project. |
 | **The backend shapes the data; the front-end renders it** | Adil · 2026-10-06 (reversed the opposite, recorded the same day, before anything was built) | Assembling data is backend work. Composed endpoints are allowed where a screen needs several things together. Each side owns its own job. Cost: a screen needing a different combination may need a backend change — accepted, since one person builds both. Not a doctrine; a judgement per case. |
 | **Rules are backend-only, always** | Adil · 2026-10-06 | The front-end never decides whether a todo is delayed, whether a lock-in may start, or whether a chat turn is within the cap. Unchanged by the reversal above. |
+| **Main screen is the notepad; todos slide in on a shortcut** | Adil · 2026-10-24 | Three surfaces side by side was clutter. Full-width notepad also settles where the cursor goes — nowhere else for it to be. Panel remembers its last state and never force-opens. |
+| **Timer on its own page, with a countdown readout on main while running** | Adil · 2026-10-24 | Parity with today's separate Google timer tab. But a timer you cannot see is one you forget, so the number stays visible for almost no space. |
+| **The timer beeps at 00:00:00** | Adil · 2026-10-24 | **Reverses an Out line in signed-off `02-spec.md`** ("notifications when a session ends"). Justified by ADR 0006 making the Google timer the stated benchmark. Sound only — no desktop notification, banner or email. |
+| **Keyboard shortcuts are fixed in v1, not customisable** | Adil · 2026-10-24 | Customising needs a settings table, an editing screen and conflict detection — and `04-contracts.md` §1.8 says there is no settings table. A reference screen documents them instead. Additive later. |
 | **REST conventions on the front-end → backend API** | Adil · 2026-10-06 | Standard practice, not re-litigated. Endpoint design is its own piece of work. |
 | **The scheduler stays** — a timed job does the day-boundary work, not lazy-on-read | Adil · 2026-09-11 | Lazy would also satisfy T4, but then every read path must remember to resolve stale state; miss one and it shows wrong data. Matches signed-off contracts §1.2. |
 | **No uptime alert in v1** | Adil · 2026-09-11 | Drops part of `01-problem.md` success criterion 6. The site going down is noticed next time he opens it. Logs, request ids and health checks stay. |

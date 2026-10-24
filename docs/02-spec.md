@@ -77,7 +77,11 @@ A countdown timer, behaving like the Google timer.
   whether they fall inside the session window follows from the session's start and end times.
 
 **Out:** scheduled or recurring sessions, session goals or labels, breaks, session history
-list, streaks, notifications when a session ends.
+list, streaks.
+
+> **Amended 2026-10-24:** *"notifications when a session ends"* was on this Out list. **A beep at
+> 00:00:00 is back in** — Google-timer parity, which ADR 0006 made the timer's stated benchmark.
+> A sound only; no desktop notification, no banner, no email (`06-ux.md` Phase 1).
 
 ---
 
