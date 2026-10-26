@@ -73,3 +73,6 @@ One line per concept I met and what it means. My proof I am not vibe coding.
 | Delta E | Validating the palette | A number for how different two colours look; below about 15 people with normal vision struggle, and the check is run separately for colour-blind vision. |
 | Categorical vs sequential colour | Bars versus the day band | Categorical colour says *which thing this is* and needs every hue distinguishable; sequential says *how much* and only needs light-to-dark. Using the wrong one is the commonest chart mistake. |
 | Design token | Writing the palette as named values | A named value like `--surface-page` used everywhere instead of a hex code, so a theme change edits one place rather than every file. |
+| transform and opacity only | The craft rules for animation | Animating width, height or position forces the browser to recalculate the whole layout every frame and it stutters; transform and opacity are handled separately and stay smooth. |
+| Easing | Making motion feel natural | Entering motion should be fast then settle (ease-out), leaving motion should go promptly (ease-in); constant-speed motion reads as mechanical. |
+| Stagger | Animating a list of bars | Starting each item slightly after the last, so a list cascades instead of moving as one block. |
