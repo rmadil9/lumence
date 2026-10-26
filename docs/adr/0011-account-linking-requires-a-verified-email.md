@@ -1,6 +1,9 @@
 # ADR 0011 — One account per email; linking requires a verified email
 
-- **Status:** Accepted
+- **Status:** **MOOT** — [ADR 0020](0020-google-oauth-is-the-only-sign-in-route.md) made Google
+  the only sign-in route on 2026-10-26, so there are no two routes to link and no takeover route
+  to close. Its rule — *one email address, one user* — survives trivially. Kept for the record.
+- **Status when written:** Accepted
 - **Decided by:** Adil
 - **Date:** 2026-09-02
 

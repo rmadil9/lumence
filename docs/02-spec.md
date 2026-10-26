@@ -12,20 +12,31 @@ see [ADR 0004](adr/0004-drop-per-todo-time-tracking.md).
 
 ## A — Authentication
 
-Open signup, real users. Not an audience of one.
+> **Rewritten 2026-10-26 by [ADR 0020](adr/0020-google-oauth-is-the-only-sign-in-route.md).**
+> Google OAuth is the only way in. A1, A2, A3 and A5 — email signup, verification link, password
+> sign-in and password reset — are **cut**. There is no password anywhere in the product.
+
+Open signup, real users. Anyone with a Google account can sign in; there is no allowlist.
 
 | # | Behaviour | Acceptance criterion |
 |---|---|---|
-| A1 | Sign up with email + password | Account is created in an unverified state and cannot read or write any app data |
-| A2 | Verify email via an emailed link | Unverified → verified; the link works exactly once; an expired link is refused and offers a resend |
-| A3 | Sign in | Correct credentials grant a session; a wrong password is refused without revealing whether the email exists |
 | A4 | Sign out | The session ends; a protected page reached afterwards redirects to sign-in |
-| A5 | Forgot password → reset via an emailed link | The link works once and expires; after reset the old password no longer signs in |
-| A6 | Sign up / sign in with Google | A Google account produces a signed-in session; the same email arriving by both routes resolves to one account, not two |
+| A6 | Sign in with Google | A Google account produces a signed-in session and, on first sign-in, an account |
 | A7 | Every user sees only their own data | User B cannot read or write any todo, notepad, chat, or activity record belonging to user A |
 
-**Out:** magic links, 2FA, any OAuth provider other than Google, account deletion,
-profile editing, changing email address.
+**Notes**
+- **There is no unverified state.** Google has already verified the address, so an account works
+  from the moment it exists.
+- **There is no password**, so there is nothing to forget and no reset. Account recovery is
+  Google's problem.
+- **There are no auth screens** — a home page with a sign-in button, then the main screen
+  (`06-ux.md` Phase 2).
+
+**Cut by ADR 0020:** ~~A1 email signup~~ · ~~A2 verification by emailed link~~ · ~~A3 password
+sign-in~~ · ~~A5 password reset~~.
+
+**Out:** magic links, 2FA, any OAuth provider other than Google, account deletion, profile
+editing, changing email address.
 
 ---
 

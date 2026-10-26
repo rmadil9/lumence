@@ -37,12 +37,12 @@ tracking is cut ([ADR 0004](docs/adr/0004-drop-per-todo-time-tracking.md)).
 | Laptop capture client | Python daemon — 15-second samples, local SQLite buffer ([ADR 0009](docs/adr/0009-activity-capture-fixed-window-samples.md)) |
 | Focused-app source | GNOME Shell extension — laptop is Wayland, D-Bus introspection restricted |
 | Browser tab capture | Browser extension (JavaScript) → reports to the local daemon, not the VPS |
-| Email relay | **Resend** — [ADR 0013](docs/adr/0013-resend-as-the-email-relay.md). TODO(adil): sending domain + SPF/DKIM — **deferred** |
+| Email relay | **None.** [ADR 0020](docs/adr/0020-google-oauth-is-the-only-sign-in-route.md) cut all email auth, so ADR 0013 (Resend) is void and there is no outbound email in v1 |
 | Background job home (spec T4) | Python, alongside the FastAPI backend — it owns the database |
 
 Deployment and auth model settled earlier:
 - **Deployment model:** everything self-hosted on one VPS — [ADR 0002](docs/adr/0002-self-host-on-a-single-vps.md)
-- **Auth model:** self-hosted, multi-user with open signup — [ADR 0005](docs/adr/0005-full-email-auth-plus-google-oauth.md)
+- **Auth model:** **Google OAuth only**, open signup, no passwords — [ADR 0020](docs/adr/0020-google-oauth-is-the-only-sign-in-route.md), superseding ADR 0005
 - **LLM:** OpenAI behind a provider-agnostic adapter — [ADR 0010](docs/adr/0010-llm-provider-openai-behind-an-adapter.md). Exact model TODO(adil)
 - **Archived prior project discarded, not extended** — [ADR 0001](docs/adr/0001-discard-archived-codebase.md)
 

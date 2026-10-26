@@ -1,6 +1,6 @@
 # Lumence — Decision Log
 
-**Owner:** Adil · **Last updated:** 2026-10-24 · **Phase:** understanding (no product code yet)
+**Owner:** Adil · **Last updated:** 2026-10-26 · **Phase:** understanding (no product code yet)
 
 This is the one-page record of every judgement made on this project so far, who made it,
 what was rejected, and what it costs to undo. It exists so the reasoning survives the
@@ -516,6 +516,34 @@ point of this document.
 
 ---
 
+### ADR 0020 — Google OAuth is the only way in; all email authentication is cut
+- **Decided by:** Adil · 2026-10-26 · supersedes ADR 0005, makes ADR 0011 moot, **voids ADR 0013
+  (Resend)**. Amends signed-off `02-spec.md` section A.
+- **Choice:** Google OAuth is the only sign-in route. **No passwords anywhere in the product.**
+  Signup stays open — anyone with a Google account signs in and gets one. No auth screens: a home
+  page with one button, then the main screen.
+- **Rejected:** keeping ADR 0005's full email stack (four behaviours, four screens, a relay, DNS
+  records and a deliverability risk — all to support a route Google already provides); an
+  allowlist, which would have bounded the unbounded OpenAI spend from ADR 0010 but contradicts
+  "v1 is built for real users" and would make ladder rung 2 pointless.
+- **Four spec behaviours disappear:** A1 email signup · A2 verification link · A3 password
+  sign-in · A5 password reset. Section A goes from seven behaviours to two.
+- **The headline consequence: outbound email stops being a v1 dependency at all.** ADR 0002 and
+  ADR 0005 both warned it could eat a day, and `00-process.md` listed it as a process risk. It is
+  now not a risk, not a cost and not a dependency. The sending domain and SPF/DKIM TODOs are
+  **deleted, not deferred**, and iteration 1 is no longer blocked on anything outside the repo.
+- **Iteration 1 shrinks sharply** — from "a meaningful slice competing with activity capture"
+  (ADR 0005's own words) to an OAuth client registration and a callback.
+- **Noted for the record:** the AI recommended cutting email auth back in ADR 0005 and was
+  overruled. Adil reached substantially the same decision himself five weeks later, from the UI
+  side rather than the schedule side.
+- **Cost accepted:** a hard dependency on Google. No Google account, no Lumence.
+- **Also gone:** nothing to forget, so no reset flow. Account recovery is Google's problem.
+- **Reversibility:** high and additive — Better Auth still supports email and password. But
+  adding it back brings the relay, the DNS records and the deliverability risk with it.
+
+---
+
 ## 3. Decisions made without a separate ADR
 
 | Decision | Made by | Reasoning |
@@ -543,6 +571,9 @@ point of this document.
 | **Main screen is the notepad; todos slide in on a shortcut** | Adil · 2026-10-24 | Three surfaces side by side was clutter. Full-width notepad also settles where the cursor goes — nowhere else for it to be. Panel remembers its last state and never force-opens. |
 | **Timer on its own page, with a countdown readout on main while running** | Adil · 2026-10-24 | Parity with today's separate Google timer tab. But a timer you cannot see is one you forget, so the number stays visible for almost no space. |
 | **The timer beeps at 00:00:00** | Adil · 2026-10-24 | **Reverses an Out line in signed-off `02-spec.md`** ("notifications when a session ends"). Justified by ADR 0006 making the Google timer the stated benchmark. Sound only — no desktop notification, banner or email. |
+| **Three fixed shortcuts: Alt+T todos, Alt+N notepad, Alt+Y timer** | Adil · 2026-10-26 | The browser owns most combinations — Ctrl+T, Ctrl+W, Ctrl+Shift+T and Ctrl+1–9 are all taken. `Alt` plus a letter is the safest space left on Linux. Three is the honest number; more would be a list nobody learns. |
+| **Device setup is one of the four header circles** | Adil · 2026-10-26 | Visited roughly once, ever, but a menu holding a single item is worse than a fourth circle — there is no settings area for it to join. |
+| **`Last reported` stays on the device screen only** | Adil · 2026-10-26 | Considered: a staleness marker in the header after an hour of silence. Not taken. **Consequence:** with the uptime alert already dropped, you learn the daemon died by visiting this screen or by noticing a thin day view — there is no other signal in the product. |
 | **Chat's empty state says the conversation is not saved** | Adil · 2026-10-26 | The screen looks exactly like every chat app where losing history would be a bug (spec M4 clears it). One sentence in the empty state is cheaper than the surprise, and it disappears once a conversation starts. |
 | **Remaining chat turns sit top-centre** | Adil · 2026-10-26 | Top-right is where such counters usually go and is easy not to look at; beside Send is hardest to ignore but crowds the action. Centre is present without being attached to the button. |
 | **The lock-in timer is a runner on a path, with confetti at the finish** | Adil · 2026-10-24 · **AI argued against the character and was overruled** | No checkpoints, unbroken path; the runner stops and catches their breath on pause; arrival fires confetti plus the beep. The AI's objections — animation in peripheral vision for hours, a runner reacting to a pause is the product having an opinion about your break, gamification is on the non-goals list. **Adil's answer, which stands:** it is his daily tool, enjoying it is a real requirement, and a tool he finds boring is one he stops opening — which is success criterion 7. A depleting indicator is legitimate here because the lock-in has a target he chose; the day view has none. |

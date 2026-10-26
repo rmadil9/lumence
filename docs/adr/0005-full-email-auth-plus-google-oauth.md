@@ -1,6 +1,9 @@
 # ADR 0005 — Full email auth, plus Google OAuth, in v1
 
-- **Status:** Accepted
+- **Status:** **SUPERSEDED** by [ADR 0020](0020-google-oauth-is-the-only-sign-in-route.md),
+  2026-10-26 — Adil cut all email authentication himself. The recommendation recorded below,
+  which was overruled at the time, was substantially the decision eventually taken.
+- **Status when written:** Accepted
 - **Decided by:** Adil
 - **Date:** 2026-08-26
 

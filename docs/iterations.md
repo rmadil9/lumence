@@ -36,10 +36,11 @@ Browser → front-end → FastAPI → Postgres → back out → deployed HTTPS U
 - **Done when:** a public HTTPS URL serves it and CI is green on `master`
 
 ### 1 — Auth
-Spec A1–A7. Better Auth, stateless JWT ([ADR 0014](adr/0014-jwt-sessions-instead-of-database-sessions.md)).
-- Sign up · verify by emailed link · sign in · sign out · password reset · Google OAuth
-- Account linking requires a verified email ([ADR 0011](adr/0011-account-linking-requires-a-verified-email.md))
-- Resend wired in ([ADR 0013](adr/0013-resend-as-the-email-relay.md)) — **needs the sending domain and SPF/DKIM**
+Spec A4, A6, A7 only. Better Auth, stateless JWT ([ADR 0014](adr/0014-jwt-sessions-instead-of-database-sessions.md)).
+- **Google OAuth in, sign out, per-user isolation.** That is the whole slice
+  ([ADR 0020](adr/0020-google-oauth-is-the-only-sign-in-route.md))
+- No passwords, no verification email, no reset, no unverified state
+- **No external dependency** — the sending domain and SPF/DKIM are deleted, not deferred
 - **Blocks everything after it.** Nothing else can be per-user until this exists
 
 ### 2 — Ingest endpoint + device registration
@@ -118,7 +119,6 @@ Not triggered by a clock (ADR 0012). Triggered by work turning out harder than i
 ---
 
 ## Open questions (not blockers)
-- Resend sending domain + SPF/DKIM — **deferred by Adil**; iteration 1 cannot send real mail until it lands
 - OpenAI model — needed by iteration 9
 - Where backups go, off-host — needed by iteration 10
 - **TODO(adil): non-negotiables** — what must never be traded away when the ladder is descended.

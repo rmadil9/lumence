@@ -1,6 +1,9 @@
 # ADR 0013 — Resend as the outbound email relay
 
-- **Status:** Accepted
+- **Status:** **VOID** — superseded by [ADR 0020](0020-google-oauth-is-the-only-sign-in-route.md),
+  2026-10-26. Google OAuth became the only sign-in route, so there is no verification or
+  password-reset email left to send. Resend is not used. Kept for the record.
+- **Status when written:** Accepted
 - **Decided by:** Adil
 - **Date:** 2026-09-11
 

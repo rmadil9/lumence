@@ -109,9 +109,9 @@ growth-manager hat is **unused** — there is no acquisition goal.
   question is not optional.
 - **Self-hosting plus self-hosted signup means owning operations** — TLS renewal (nginx +
   Certbot, so renewal is ours to test), backups with a tested restore, restart-on-reboot, OS
-  patching. Email deliverability is now Resend's
-  ([ADR 0013](adr/0013-resend-as-the-email-relay.md)), which removes one of these. None of the
-  rest appear on a feature list.
+  patching. **Email deliverability is gone entirely** — not outsourced but removed, because
+  [ADR 0020](adr/0020-google-oauth-is-the-only-sign-in-route.md) left no email to send. None of
+  the rest appear on a feature list.
 - **No spike means the activity-capture cost is discovered during the build, not before it.**
   Accepted tradeoff (ADR 0003). **Mitigated now only by risk-ordering** — the checkpoints that
   were the other half of that mitigation were dropped in ADR 0012.
